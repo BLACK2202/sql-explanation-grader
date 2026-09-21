@@ -1,0 +1,1 @@
+{"id":"t1","schema":"CREATE TABLE users(id INT, age INT);","sql":"SELECT COUNT(*) FROM users WHERE age > 30;"}

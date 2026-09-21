@@ -1,0 +1,3 @@
+ollama
+pydantic
+scikit-learn
