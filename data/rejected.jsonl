@@ -1,0 +1,70 @@
+{"sql": "SELECT * FROM accounts WHERE type = 'Checking' AND balance < (SELECT MIN(balance) FROM accounts WHERE type = 'Checking')", "domain": "bank", "reason": "requested feature missing"}
+{"sql": "SELECT client_id FROM clients WHERE branch = (SELECT branch FROM clients WHERE name = 'ABC')", "domain": "bank", "reason": "no such column: client_id"}
+{"sql": "SELECT COUNT(*) FROM accounts WHERE balance < 0", "domain": "bank", "reason": "requested feature missing"}
+{"sql": "SELECT * FROM clients WHERE branch = (SELECT branch FROM clients WHERE id = (SELECT MAX(id) FROM clients))", "domain": "bank", "reason": "requested feature missing"}
+{"sql": "SELECT COUNT(*) FROM transactions WHERE tx_date = (SELECT MAX(tx_date) FROM transactions WHERE account_id IN (SELECT id FROM accounts WHERE type = 'Checking'))", "domain": "bank", "reason": "requested feature missing"}
+{"sql": "WITH client_data AS (SELECT id, name, branch FROM clients)", "domain": "bank", "reason": "incomplete input"}
+{"sql": "WITH account_balance AS (SELECT account_id, SUM(balance) AS total_balance FROM accounts GROUP BY account_id)", "domain": "bank", "reason": "incomplete input"}
+{"sql": "WITH transaction_amount AS (SELECT account_id, SUM(amount) AS total_amount FROM transactions GROUP BY account_id)", "domain": "bank", "reason": "incomplete input"}
+{"sql": "WITH client_branch AS (SELECT id, name, branch FROM clients)", "domain": "bank", "reason": "incomplete input"}
+{"sql": "WITH account_type AS (SELECT client_id, COUNT(*) AS num_transactions FROM transactions GROUP BY client_id)", "domain": "bank", "reason": "incomplete input"}
+{"sql": "SELECT name, AVG(fee) FROM appointments GROUP BY name HAVING AVG(fee) > 1000", "domain": "hospital", "reason": "no such column: name"}
+{"sql": "SELECT doctors.name, AVG(appointments.fee) FROM doctors JOIN appointments ON doctors.id = appointments.doctor_id GROUP BY doctors.name", "domain": "hospital", "reason": "requested feature missing"}
+{"sql": "SELECT name, COUNT(*) FROM appointments GROUP BY name HAVING COUNT(*) > 5", "domain": "hospital", "reason": "no such column: name"}
+{"sql": "SELECT doctors.specialty, AVG(appointments.fee) FROM doctors JOIN appointments ON doctors.id = appointments.doctor_id GROUP BY doctors.specialty", "domain": "hospital", "reason": "requested feature missing"}
+{"sql": "SELECT patients.name, AVG(appointments.fee) FROM patients JOIN appointments ON patients.id = appointments.patient_id GROUP BY patients.name", "domain": "hospital", "reason": "requested feature missing"}
+{"sql": "SELECT ROW_NUMBER() OVER (ORDER BY quantity * price DESC) AS row_num, name, price, category, quantity FROM orders;", "domain": "retail", "reason": "no such column: price"}
+{"sql": "SELECT patients.id, appointments.appt_date, patients.name AS patient_name, doctors.name AS doctor_name, appointments.fee FROM patients INNER JOIN appointments ON patients.id = appointments.patient_id INNER JOIN doctors ON appointments.doctor_id = doctors.id WHERE appointments.appt_date BETWEEN '2022-01-01' AND '2022-12-31'.", "domain": "hospital", "reason": "incomplete input"}
+{"sql": "WITH TotalRevenue AS (SELECT SUM(price_per_night * nights) FROM bookings)", "domain": "hotel", "reason": "incomplete input"}
+{"sql": "WITH AvailableRooms AS (SELECT COUNT(*) FROM rooms WHERE id NOT IN (SELECT room_id FROM bookings))", "domain": "hotel", "reason": "incomplete input"}
+{"sql": "WITH UpcomingBookings AS (SELECT check_in FROM bookings WHERE nights > 0)", "domain": "hotel", "reason": "incomplete input"}
+{"sql": "WITH BookedRooms AS (SELECT COUNT(*) FROM bookings WHERE room_id IN (SELECT id FROM rooms))", "domain": "hotel", "reason": "incomplete input"}
+{"sql": "WITH RoomRevenue AS (SELECT SUM(price_per_night * nights) FROM bookings WHERE room_id IN (SELECT id FROM rooms))", "domain": "hotel", "reason": "incomplete input"}
+{"sql": "WITH customer_names AS (SELECT name FROM customers)", "domain": "retail", "reason": "incomplete input"}
+{"sql": "WITH product_details AS (SELECT name, price FROM products)", "domain": "retail", "reason": "incomplete input"}
+{"sql": "WITH customer_orders AS (SELECT * FROM orders WHERE customer_id IN (SELECT id FROM customers))", "domain": "retail", "reason": "incomplete input"}
+{"sql": "WITH product_total AS (SELECT SUM(quantity * price) FROM orders o JOIN products p ON o.product_id = p.id)", "domain": "retail", "reason": "incomplete input"}
+{"sql": "WITH customer_top_product AS (SELECT customer_id, MAX(quantity) as max_quantity FROM orders GROUP BY customer_id)", "domain": "retail", "reason": "incomplete input"}
+{"sql": "WITH CTE AS (SELECT account_id FROM accounts UNION SELECT account_id FROM transactions)", "domain": "bank", "reason": "incomplete input"}
+{"sql": "SELECT count(*) FROM CTE", "domain": "bank", "reason": "no such table: CTE"}
+{"sql": "WITH CTE AS (SELECT account_id, SUM(amount) FROM transactions GROUP BY account_id UNION SELECT account_id, SUM(amount) FROM accounts GROUP BY account_id)", "domain": "bank", "reason": "incomplete input"}
+{"sql": "SELECT COUNT(*) FROM accounts WHERE balance < 0 UNION SELECT COUNT(*) FROM transactions WHERE amount < 0", "domain": "bank", "reason": "requested feature missing"}
+{"sql": "WITH CTE AS (SELECT client_id FROM clients WHERE branch = 'New York' UNION SELECT client_id FROM clients WHERE branch = 'Los Angeles')", "domain": "bank", "reason": "incomplete input"}
+{"sql": "SELECT COUNT(*) FROM accounts WHERE client_id IN (SELECT client_id FROM CTE)", "domain": "bank", "reason": "no such table: CTE"}
+{"sql": "SELECT * FROM loans WHERE book_id IS NULL", "domain": "library", "reason": "requested feature missing"}
+{"sql": "SELECT * FROM loans WHERE member_id IS NULL", "domain": "library", "reason": "requested feature missing"}
+{"sql": "SELECT * FROM books WHERE id NOT IN (SELECT book_id FROM loans)", "domain": "library", "reason": "requested feature missing"}
+{"sql": "SELECT b.title, m.name, COALESCE(l.loan_date, 'Never') FROM books b LEFT JOIN loans l ON b.id = l.book_id LEFT JOIN members m ON l.member_id = m.id WHERE b.year < (SELECT MAX(year) FROM loans)", "domain": "library", "reason": "misuse of aggregate: MAX()"}
+{"sql": "SELECT * FROM customers WHERE id IN (SELECT customer_id FROM orders WHERE quantity > 1)", "domain": "retail", "reason": "requested feature missing"}
+{"sql": "SELECT * FROM products WHERE price IN (SELECT price FROM orders WHERE quantity > 1)", "domain": "retail", "reason": "requested feature missing"}
+{"sql": "SELECT * FROM orders WHERE customer_id IN (SELECT id FROM customers WHERE name = 'John')", "domain": "retail", "reason": "requested feature missing"}
+{"sql": "SELECT SUM(quantity) AS total_quantity FROM orders WHERE customer_id IN (SELECT id FROM customers WHERE city = 'New York')", "domain": "retail", "reason": "requested feature missing"}
+{"sql": "SELECT * FROM customers WHERE category IN (SELECT category FROM products WHERE price IN (SELECT price FROM orders))", "domain": "retail", "reason": "no such column: category"}
+{"sql": "SELECT * FROM loans WHERE book_id IS NULL;", "domain": "library", "reason": "requested feature missing"}
+{"sql": "SELECT loans.loan_date FROM loans LEFT JOIN loans2 ON loans.id = loans2.id WHERE loans2.loan_date IS NULL;", "domain": "library", "reason": "no such table: loans2"}
+{"sql": "WITH booked_rooms AS (SELECT room_id, price_per_night FROM bookings)", "domain": "hotel", "reason": "incomplete input"}
+{"sql": "WITH booked_rooms AS (SELECT room_id, price_per_night FROM bookings WHERE nights > 1),", "domain": "hotel", "reason": "incomplete input"}
+{"sql": "WITH booked_rooms AS (SELECT room_id, SUM(nights) AS total_nights FROM bookings GROUP BY room_id),", "domain": "hotel", "reason": "incomplete input"}
+{"sql": "WITH booked_rooms AS (SELECT guest_id, COUNT(*) AS booking_count FROM bookings GROUP BY guest_id),", "domain": "hotel", "reason": "incomplete input"}
+{"sql": "WITH booked_rooms AS (SELECT room_id, AVG(price_per_night) AS average_price FROM bookings GROUP BY room_id)", "domain": "hotel", "reason": "incomplete input"}
+{"sql": "SELECT name FROM students GROUP BY name HAVING COUNT(DISTINCT course_id) > 2;", "domain": "school", "reason": "no such column: course_id"}
+{"sql": "SELECT * FROM loans WHERE loan_date IS NULL;", "domain": "library", "reason": "requested feature missing"}
+{"sql": "SELECT loans.loan_date FROM loans LEFT JOIN loans ON loans.id = loans2.id WHERE loans2.loan_date IS NULL AND loans.loan_date IS NOT NULL;", "domain": "library", "reason": "ambiguous column name: loans.loan_date"}
+{"sql": "SELECT * FROM loans WHERE loan_date = (SELECT MAX(loan_date) FROM loans WHERE loan_date IS NOT NULL);", "domain": "library", "reason": "requested feature missing"}
+{"sql": "WITH borrowed_books AS (SELECT book_id FROM loans WHERE returned = 0),", "domain": "library", "reason": "incomplete input"}
+{"sql": "SELECT book_id FROM borrowed_books;", "domain": "library", "reason": "no such table: borrowed_books"}
+{"sql": "WITH loan_summary AS (SELECT AVG(returned) AS avg_returned FROM loans),", "domain": "library", "reason": "incomplete input"}
+{"sql": "SELECT loan_date, SUM(returned) FROM loans GROUP BY loan_date ORDER BY SUM(returned) DESC;", "domain": "library", "reason": "requested feature missing"}
+{"sql": "WITH members_with_loans AS (SELECT m.name, COUNT(l.id) FROM members m JOIN loans l ON m.id = l.member_id GROUP BY m.id),", "domain": "library", "reason": "incomplete input"}
+{"sql": "SELECT name, COUNT(*) FROM members_with_loans WHERE id IN (SELECT member_id FROM loans WHERE returned = 0);", "domain": "library", "reason": "no such table: members_with_loans"}
+{"sql": "WITH books_without_loans AS (SELECT title FROM books WHERE id NOT IN (SELECT book_id FROM loans)),", "domain": "library", "reason": "incomplete input"}
+{"sql": "SELECT * FROM books_without_loans;", "domain": "library", "reason": "no such table: books_without_loans"}
+{"sql": "SELECT RANK() OVER (PARTITION BY book_id ORDER BY year DESC) AS book_year_rank, * FROM loans", "domain": "library", "reason": "no such column: year"}
+{"sql": "SELECT title, author, loan_date, CASE WHEN returned = 1 THEN 'Returned' ELSE 'Not returned' END FROM loans", "domain": "library", "reason": "no such column: title"}
+{"sql": "SELECT name, CASE WHEN year - joined > 1 THEN 'New' ELSE 'Returning' END FROM members", "domain": "library", "reason": "no such column: year"}
+{"sql": "SELECT name, AVG(fee) FROM appointments GROUP BY name HAVING AVG(fee) > 100", "domain": "hospital", "reason": "no such column: name"}
+{"sql": "SELECT name, COUNT(*) FROM appointments GROUP BY name HAVING COUNT(*) > 5", "domain": "hospital", "reason": "no such column: name"}
+{"sql": "SELECT specialty, AVG(fee) FROM appointments GROUP BY specialty HAVING AVG(fee) > 50", "domain": "hospital", "reason": "no such column: specialty"}
+{"sql": "SELECT title, AVG(grade) FROM courses GROUP BY title HAVING AVG(grade) > 3.5;", "domain": "school", "reason": "no such column: grade"}
+{"sql": "SELECT students.name FROM enrollments JOIN courses ON enrollments.course_id = courses.id;", "domain": "school", "reason": "no such column: students.name"}
+{"sql": "SELECT * FROM courses JOIN enrollments ON courses.id = enrollments.course_id GROUP BY courses.id;", "domain": "school", "reason": "requested feature missing"}
