@@ -1,171 +1,134 @@
-"""
-harness/analyze.py — Break down evaluation results by SQL feature, domain, and error type.
+"""Analyze side-by-side benchmark results.
 
 Usage:
-    python harness/analyze.py results/v2_dev.jsonl
-    python harness/analyze.py results/v2_dev.jsonl results/v2_test.jsonl   # compare two files
+  python harness/analyze.py results/qwen_vs_llama_dev.jsonl
+
+Important terminology: without human/golden validation, this tool reports
+"judge pass rate", not true accuracy.
 """
+from __future__ import annotations
 
 import argparse
 import json
 import pathlib
-import sys
-
-RESET  = "\033[0m"
-BOLD   = "\033[1m"
-GREEN  = "\033[32m"
-RED    = "\033[31m"
-YELLOW = "\033[33m"
-CYAN   = "\033[36m"
-DIM    = "\033[2m"
-
-parser = argparse.ArgumentParser(description="Analyze grader results by feature and domain.")
-parser.add_argument("results", nargs="+", type=pathlib.Path, help="One or more results JSONL files.")
-parser.add_argument("--data-dir", type=pathlib.Path, default=pathlib.Path("data"),
-                    help="Directory containing the source JSONL splits.")
-parser.add_argument("--no-color", action="store_true", help="Disable ANSI colors.")
-args = parser.parse_args()
-
-if args.no_color:
-    RESET = BOLD = GREEN = RED = YELLOW = CYAN = DIM = ""
+from collections import Counter, defaultdict
+from statistics import mean
 
 
-def color_pct(pct: float) -> str:
-    c = GREEN if pct >= 60 else (YELLOW if pct >= 40 else RED)
-    return f"{c}{pct:5.1f}%{RESET}"
-
-
-def load_results(path: pathlib.Path) -> list[dict]:
+def load(path: pathlib.Path) -> list[dict]:
     rows = []
-    for line in path.open(encoding="utf-8"):
-        try:
-            rows.append(json.loads(line))
-        except json.JSONDecodeError:
-            pass
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                rows.append(json.loads(line))
     return rows
 
 
-def load_metadata(data_dir: pathlib.Path) -> dict[str, dict]:
-    """Build a map of item_id → {feature, domain} from all split files."""
-    meta = {}
-    for split_file in data_dir.glob("*.jsonl"):
-        for line in split_file.open(encoding="utf-8"):
-            try:
-                item = json.loads(line)
-                if "id" in item:
-                    meta[item["id"]] = {
-                        "feature": item.get("feature", "unknown"),
-                        "domain":  item.get("domain",  "unknown"),
-                    }
-            except json.JSONDecodeError:
-                pass
-    return meta
+def pct(n: int, d: int) -> str:
+    return f"{100*n/d:.1f}%" if d else "—"
 
 
-def analyze(rows: list[dict], meta: dict[str, dict], label: str):
-    scored = [r for r in rows if r.get("error") is None]
-    errors = [r for r in rows if r.get("error") is not None]
-    n_good = sum(r["score"] for r in scored)
-    pct    = 100 * n_good / len(scored) if scored else 0
-
-    print(f"\n{BOLD}{CYAN}{'═'*60}{RESET}")
-    print(f"{BOLD}{CYAN}  {label}{RESET}")
-    print(f"{CYAN}{'═'*60}{RESET}")
-    print(f"  Total items : {len(rows)}")
-    print(f"  Scored      : {len(scored)}   ({len(errors)} errors)")
-    print(f"  Good        : {n_good}  {color_pct(pct)}")
-
-    # ── By feature ────────────────────────────────────────────
-    print(f"\n{BOLD}By SQL Feature:{RESET}")
-    feat_stats: dict[str, list] = {}
-    for r in scored:
-        feat = meta.get(r["id"], {}).get("feature", "unknown")
-        feat_stats.setdefault(feat, []).append(r["score"])
-
-    if feat_stats:
-        col = 42
-        header = f"  {'Feature':<{col}} {'Good':>5}  {'Total':>5}  {'Acc':>7}"
-        print(f"{DIM}{header}{RESET}")
-        print(f"  {'-'*col}  {'─'*5}  {'─'*5}  {'─'*7}")
-        for feat, scores in sorted(feat_stats.items(), key=lambda x: -sum(x[1])/len(x[1])):
-            g = sum(scores); t = len(scores); p = 100*g/t
-            print(f"  {feat:<{col}} {g:>5}  {t:>5}  {color_pct(p)}")
-    else:
-        print("  (no feature metadata found — run from the project root)")
-
-    # ── By domain ─────────────────────────────────────────────
-    print(f"\n{BOLD}By Domain:{RESET}")
-    dom_stats: dict[str, list] = {}
-    for r in scored:
-        dom = meta.get(r["id"], {}).get("domain", "unknown")
-        dom_stats.setdefault(dom, []).append(r["score"])
-
-    if dom_stats:
-        col = 16
-        header = f"  {'Domain':<{col}} {'Good':>5}  {'Total':>5}  {'Acc':>7}"
-        print(f"{DIM}{header}{RESET}")
-        print(f"  {'-'*col}  {'─'*5}  {'─'*5}  {'─'*7}")
-        for dom, scores in sorted(dom_stats.items(), key=lambda x: -sum(x[1])/len(x[1])):
-            g = sum(scores); t = len(scores); p = 100*g/t
-            print(f"  {dom:<{col}} {g:>5}  {t:>5}  {color_pct(p)}")
-
-    # ── Latency ───────────────────────────────────────────────
-    lats = [
-        r["sys_cost"]["latency"] + r["judge_cost"]["latency"]
-        for r in scored if r.get("sys_cost") and r.get("judge_cost")
-    ]
-    if lats:
-        print(f"\n{BOLD}Latency (generator + judge):{RESET}")
-        print(f"  Avg : {sum(lats)/len(lats):.1f}s")
-        print(f"  Min : {min(lats):.1f}s")
-        print(f"  Max : {max(lats):.1f}s")
-
-    # ── Errors ────────────────────────────────────────────────
-    if errors:
-        print(f"\n{BOLD}{YELLOW}Errors ({len(errors)}):{RESET}")
-        for r in errors[:10]:
-            print(f"  {RED}{r['id']}{RESET}: {r.get('error','?')[:100]}")
-        if len(errors) > 10:
-            print(f"  … and {len(errors)-10} more")
-
-    # ── Sample bad explanations ────────────────────────────────
-    bads = [r for r in scored if r["score"] == 0 and r.get("reason")][:3]
-    if bads:
-        print(f"\n{BOLD}Sample BAD items:{RESET}")
-        for r in bads:
-            feat = meta.get(r["id"], {}).get("feature", "?")
-            sql_preview = (r.get("input") or "")[:80].replace("\n", " ")
-            print(f"\n  {DIM}[{r['id']} · {feat}]{RESET}")
-            print(f"  SQL    : {sql_preview}")
-            print(f"  Reason : {RED}{(r.get('reason') or '')[:120]}{RESET}")
-
-    print()
+def avg(values: list[float]) -> str:
+    return f"{mean(values):.2f}" if values else "—"
 
 
-# ── Main ──────────────────────────────────────────────────────
-meta = load_metadata(args.data_dir)
+def print_table(headers: list[str], rows: list[list[str]]) -> None:
+    widths = [len(h) for h in headers]
+    for row in rows:
+        for i, cell in enumerate(row):
+            widths[i] = max(widths[i], len(str(cell)))
+    fmt = "  ".join(f"{{:<{w}}}" for w in widths)
+    print(fmt.format(*headers))
+    print(fmt.format(*["-" * w for w in widths]))
+    for row in rows:
+        print(fmt.format(*row))
 
-all_file_rows = []
-for path in args.results:
-    if not path.exists():
-        print(f"[WARN] File not found: {path}", file=sys.stderr)
-        continue
-    rows = load_results(path)
-    all_file_rows.append((path.stem, rows))
-    analyze(rows, meta, label=path.stem)
 
-# If multiple files given, print a comparison table
-if len(all_file_rows) > 1:
-    print(f"{BOLD}{CYAN}{'═'*60}{RESET}")
-    print(f"{BOLD}{CYAN}  Comparison{RESET}")
-    print(f"{CYAN}{'═'*60}{RESET}")
-    col = 30
-    print(f"  {'Run':<{col}} {'Good':>5}  {'Total':>5}  {'Acc':>7}")
-    print(f"  {'-'*col}  {'─'*5}  {'─'*5}  {'─'*7}")
-    for label, rows in all_file_rows:
-        scored = [r for r in rows if r.get("error") is None]
-        g = sum(r["score"] for r in scored)
-        t = len(scored)
-        p = 100*g/t if t else 0
-        print(f"  {label:<{col}} {g:>5}  {t:>5}  {color_pct(p)}")
-    print()
+def summarize(rows: list[dict]) -> dict:
+    valid = [r for r in rows if not r.get("error") and r.get("model_a") and r.get("model_b")]
+    if not valid:
+        return {"valid": []}
+    a_name = valid[0].get("model_a_name", "Model A")
+    b_name = valid[0].get("model_b_name", "Model B")
+    dims = ["correctness", "completeness", "hallucination_free", "clarity"]
+    summary = {
+        "valid": valid,
+        "a_name": a_name,
+        "b_name": b_name,
+        "a_pass": sum(r["model_a"]["score"] for r in valid),
+        "b_pass": sum(r["model_b"]["score"] for r in valid),
+        "outcomes": Counter(r["outcome"] for r in valid),
+        "a_dims": {d: sum(bool(r["model_a"]["dimensions"].get(d)) for r in valid) for d in dims},
+        "b_dims": {d: sum(bool(r["model_b"]["dimensions"].get(d)) for r in valid) for d in dims},
+        "a_lat": [r["model_a"]["generation_cost"]["latency"] for r in valid if r["model_a"].get("generation_cost")],
+        "b_lat": [r["model_b"]["generation_cost"]["latency"] for r in valid if r["model_b"].get("generation_cost")],
+        "a_in": [r["model_a"]["generation_cost"]["in_tok"] for r in valid if r["model_a"].get("generation_cost")],
+        "b_in": [r["model_b"]["generation_cost"]["in_tok"] for r in valid if r["model_b"].get("generation_cost")],
+        "a_out": [r["model_a"]["generation_cost"]["out_tok"] for r in valid if r["model_a"].get("generation_cost")],
+        "b_out": [r["model_b"]["generation_cost"]["out_tok"] for r in valid if r["model_b"].get("generation_cost")],
+    }
+    return summary
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description="Analyze a two-model SQL explanation benchmark.")
+    ap.add_argument("results", type=pathlib.Path)
+    args = ap.parse_args()
+    rows = load(args.results)
+    s = summarize(rows)
+    valid = s["valid"]
+    if not valid:
+        print("No valid comparison rows found.")
+        return
+
+    n = len(valid)
+    print(f"\nComparison: {s['a_name']} vs {s['b_name']}")
+    print(f"Valid items: {n} | Errors: {len(rows)-n}")
+    print("Metric note: pass percentages below are judge pass rates, not true accuracy unless validated against human/golden labels.\n")
+
+    print_table(
+        ["Metric", s["a_name"], s["b_name"]],
+        [
+            ["Judge pass rate", pct(s["a_pass"], n), pct(s["b_pass"], n)],
+            ["Correctness", pct(s["a_dims"]["correctness"], n), pct(s["b_dims"]["correctness"], n)],
+            ["Completeness", pct(s["a_dims"]["completeness"], n), pct(s["b_dims"]["completeness"], n)],
+            ["Hallucination-free", pct(s["a_dims"]["hallucination_free"], n), pct(s["b_dims"]["hallucination_free"], n)],
+            ["Clarity", pct(s["a_dims"]["clarity"], n), pct(s["b_dims"]["clarity"], n)],
+            ["Avg generation latency (s)", avg(s["a_lat"]), avg(s["b_lat"])],
+            ["Avg input tokens", avg(s["a_in"]), avg(s["b_in"])],
+            ["Avg output tokens", avg(s["a_out"]), avg(s["b_out"])],
+        ],
+    )
+
+    print("\nPair outcomes")
+    for key in ("both_correct", "only_a_correct", "only_b_correct", "both_wrong"):
+        print(f"  {key:18s} {s['outcomes'].get(key,0):4d}  ({pct(s['outcomes'].get(key,0), n)})")
+    print(f"  {'disagreement':18s} {sum(r['disagreement'] for r in valid):4d}  ({pct(sum(r['disagreement'] for r in valid), n)})")
+
+    categories: dict[str, list[dict]] = defaultdict(list)
+    for r in valid:
+        for c in r.get("categories", []):
+            categories[c].append(r)
+    print("\nBy SQL category")
+    table = []
+    for category in ("JOIN", "WHERE", "GROUP BY", "HAVING", "ORDER BY", "aggregation", "subquery", "LIMIT", "DISTINCT"):
+        subset = categories.get(category, [])
+        if not subset:
+            continue
+        a = sum(r["model_a"]["score"] for r in subset)
+        b = sum(r["model_b"]["score"] for r in subset)
+        dis = sum(r["disagreement"] for r in subset)
+        table.append([category, str(len(subset)), pct(a, len(subset)), pct(b, len(subset)), pct(dis, len(subset))])
+    print_table(["Category", "N", f"{s['a_name']} pass", f"{s['b_name']} pass", "Disagree"], table)
+
+    disagreements = [r for r in valid if r["disagreement"]]
+    if disagreements:
+        print("\nDisagreement cases")
+        for r in disagreements[:20]:
+            print(f"  {r['id']} | {r['outcome']} | {', '.join(r.get('categories', [])) or 'basic SELECT'}")
+            print(f"    A: {r['model_a']['judge_reason']}")
+            print(f"    B: {r['model_b']['judge_reason']}")
+
+
+if __name__ == "__main__":
+    main()

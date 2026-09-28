@@ -1,7 +1,6 @@
 import time
 import logging
 
-import ollama
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -15,6 +14,7 @@ def call_json(
     temperature: float = 0,
     seed: int | None = None,
     max_retries: int = 3,
+    num_predict: int = 3000,
 ) -> tuple[BaseModel, dict]:
     """
     Call an Ollama model and parse structured JSON output.
@@ -23,10 +23,15 @@ def call_json(
     latency, usd (always 0.0 for local), in_tok, out_tok.
     Retries up to max_retries times with exponential backoff.
     """
+    try:
+        import ollama
+    except ImportError as exc:
+        raise RuntimeError("The 'ollama' Python package is required. Run: python -m pip install -r requirements.txt") from exc
+
     t = time.time()
     last_error: Exception | None = None
 
-    opts: dict = {"temperature": temperature, "num_predict": 3000}
+    opts: dict = {"temperature": temperature, "num_predict": num_predict}
     if seed is not None:
         opts["seed"] = seed
 

@@ -1,580 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SQL Explanation Grader — Live Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:        #0b0f1a;
-      --surface:   #111827;
-      --surface2:  #1a2235;
-      --border:    #1f2d45;
-      --accent:    #3b82f6;
-      --accent2:   #6366f1;
-      --good:      #10b981;
-      --bad:       #ef4444;
-      --warn:      #f59e0b;
-      --text:      #e2e8f0;
-      --muted:     #64748b;
-      --mono:      'JetBrains Mono', monospace;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 24px;
-    }
-
-    /* ── Header ── */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 32px;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-    .header-left h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #60a5fa, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -0.02em;
-    }
-    .header-left p { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
-
-    .run-selector { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .run-selector select {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-family: var(--mono);
-      cursor: pointer;
-      outline: none;
-    }
-    .run-selector select:focus { border-color: var(--accent); }
-
-    .pulse-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: var(--good);
-      animation: pulse 1.5s infinite;
-      flex-shrink: 0;
-    }
-    .pulse-dot.idle { background: var(--muted); animation: none; }
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,.6); }
-      50%       { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
-    }
-
-    /* ── Stat cards ── */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 14px;
-      margin-bottom: 24px;
-    }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
-      transition: transform .2s, border-color .2s;
-    }
-    .card:hover { transform: translateY(-2px); border-color: var(--accent); }
-    .card::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: var(--glow, transparent);
-      opacity: .06;
-      pointer-events: none;
-    }
-    .card.good  { --glow: var(--good); }
-    .card.bad   { --glow: var(--bad); }
-    .card.blue  { --glow: var(--accent); }
-    .card.warn  { --glow: var(--warn); }
-
-    .card-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
-    .card-value { font-size: 2rem; font-weight: 700; line-height: 1; }
-    .card-sub   { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
-    .card.good .card-value { color: var(--good); }
-    .card.bad  .card-value { color: var(--bad); }
-    .card.blue .card-value { color: #60a5fa; }
-    .card.warn .card-value { color: var(--warn); }
-
-    /* ── Progress bar ── */
-    .progress-section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px 24px;
-      margin-bottom: 24px;
-    }
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 12px;
-    }
-    .progress-header span { font-size: 0.85rem; color: var(--muted); }
-    .progress-header strong { font-size: 1rem; font-weight: 600; }
-
-    .progress-track {
-      width: 100%;
-      height: 10px;
-      background: var(--surface2);
-      border-radius: 99px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      border-radius: 99px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      transition: width .6s cubic-bezier(.4,0,.2,1);
-    }
-
-    .progress-segments {
-      display: flex;
-      gap: 4px;
-      margin-top: 10px;
-    }
-    .seg {
-      flex: 1;
-      height: 4px;
-      border-radius: 99px;
-      background: var(--surface2);
-      transition: background .4s;
-    }
-    .seg.good { background: var(--good); }
-    .seg.bad  { background: var(--bad); }
-    .seg.err  { background: var(--warn); }
-
-    /* ── Accuracy ring ── */
-    .lower-grid {
-      display: grid;
-      grid-template-columns: 220px 1fr;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    @media (max-width: 700px) { .lower-grid { grid-template-columns: 1fr; } }
-
-    .ring-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
-    .ring-card h3 { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-
-    .ring-wrap { position: relative; width: 140px; height: 140px; }
-    .ring-wrap svg { width: 140px; height: 140px; transform: rotate(-90deg); }
-    .ring-bg { stroke: var(--surface2); }
-    .ring-fill {
-      stroke: url(#ringGrad);
-      stroke-linecap: round;
-      transition: stroke-dashoffset .8s cubic-bezier(.4,0,.2,1);
-    }
-    .ring-label {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .ring-pct  { font-size: 1.9rem; font-weight: 700; color: var(--text); }
-    .ring-sub  { font-size: .7rem; color: var(--muted); margin-top: 2px; }
-
-    /* ── Feed ── */
-    .feed-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      overflow: hidden;
-    }
-    .feed-card h3 { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 14px; }
-
-    .feed { display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto; }
-    .feed::-webkit-scrollbar { width: 4px; }
-    .feed::-webkit-scrollbar-track { background: transparent; }
-    .feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-
-    .feed-item {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 10px;
-      align-items: start;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      animation: slideIn .25s ease;
-    }
-    @keyframes slideIn { from { opacity:0; transform: translateY(-6px); } to { opacity:1; transform: none; } }
-
-    .feed-badge {
-      font-size: .7rem;
-      font-family: var(--mono);
-      font-weight: 500;
-      padding: 3px 8px;
-      border-radius: 6px;
-      margin-top: 1px;
-      white-space: nowrap;
-    }
-    .feed-badge.good { background: rgba(16,185,129,.15); color: var(--good); }
-    .feed-badge.bad  { background: rgba(239,68,68,.15);  color: var(--bad); }
-    .feed-badge.err  { background: rgba(245,158,11,.15); color: var(--warn); }
-
-    .feed-body {}
-    .feed-id   { font-size: .7rem; font-family: var(--mono); color: var(--muted); margin-bottom: 3px; }
-    .feed-sql  { font-size: .78rem; font-family: var(--mono); color: #93c5fd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-    .feed-reason { font-size: .78rem; color: var(--muted); margin-top: 3px; line-height: 1.4; }
-
-    .feed-latency { font-size: .72rem; font-family: var(--mono); color: var(--muted); white-space: nowrap; }
-
-    /* ── Empty state ── */
-    .empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 48px 24px;
-      color: var(--muted);
-      font-size: .9rem;
-    }
-    .empty svg { opacity: .3; }
-
-    /* ── ETA chip ── */
-    .eta-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: .78rem;
-      color: var(--muted);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 99px;
-      padding: 4px 12px;
-    }
-
-    /* ── PDF Export Button ── */
-    .pdf-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: .78rem;
-      font-weight: 600;
-      color: #fff;
-      background: linear-gradient(135deg, #4f46e5, #6366f1);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px;
-      padding: 7px 14px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
-    }
-    .pdf-btn:hover {
-      background: linear-gradient(135deg, #4338ca, #4f46e5);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
-    }
-    .pdf-btn:active {
-      transform: translateY(0);
-    }
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SQL Explanation Grader — A/B</title>
+<style>
+body{font-family:system-ui,Arial;background:#0b1020;color:#e8edf8;margin:0;padding:24px}
+h1{margin:0 0 8px}.sub{color:#9aa6bd;margin-bottom:20px}
+select{padding:8px 12px;border-radius:8px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+.card,.case{background:#141b2d;border:1px solid #26314d;border-radius:12px;padding:16px}
+.big{font-size:28px;font-weight:700}.muted{color:#9aa6bd}
+table{width:100%;border-collapse:collapse;margin:16px 0;background:#141b2d}
+th,td{padding:10px;border-bottom:1px solid #26314d;text-align:left}
+.ab{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+pre{white-space:pre-wrap;background:#0e1424;padding:12px;border-radius:8px}
+.good{color:#6ee7a8}.bad{color:#ff8f8f}
+@media(max-width:900px){.grid,.ab{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-
-<div class="header">
-  <div class="header-left">
-    <h1>SQL Explanation Grader</h1>
-    <p>Live evaluation dashboard — auto-refreshes every 5 seconds</p>
-  </div>
-  <div class="run-selector">
-    <div class="pulse-dot idle" id="liveDot"></div>
-    <select id="runSelect" onchange="onRunChange()">
-      <option value="">Loading runs…</option>
-    </select>
-    <select id="splitSelect" onchange="refresh()">
-      <option value="dev">dev</option>
-      <option value="test">test</option>
-      <option value="tiny">tiny</option>
-      <option value="all">all</option>
-    </select>
-    <span class="eta-chip" id="etaChip">⏱ —</span>
-    <button class="pdf-btn" onclick="exportPdf()" title="Download PDF Report for selected run">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-      Export PDF
-    </button>
-  </div>
-</div>
-
-<!-- Stat cards -->
-<div class="stats-grid">
-  <div class="card blue">
-    <div class="card-label">Progress</div>
-    <div class="card-value" id="statDone">—</div>
-    <div class="card-sub" id="statTotal">of — items</div>
-  </div>
-  <div class="card good">
-    <div class="card-label">Good</div>
-    <div class="card-value" id="statGood">—</div>
-    <div class="card-sub" id="statGoodPct">—%</div>
-  </div>
-  <div class="card bad">
-    <div class="card-label">Bad</div>
-    <div class="card-value" id="statBad">—</div>
-    <div class="card-sub" id="statBadPct">—%</div>
-  </div>
-  <div class="card warn">
-    <div class="card-label">Errors</div>
-    <div class="card-value" id="statErr">—</div>
-    <div class="card-sub">failed items</div>
-  </div>
-  <div class="card blue">
-    <div class="card-label">Avg Latency</div>
-    <div class="card-value" id="statLat">—</div>
-    <div class="card-sub">seconds / item</div>
-  </div>
-</div>
-
-<!-- Progress bar -->
-<div class="progress-section">
-  <div class="progress-header">
-    <strong id="progressLabel">Waiting for results…</strong>
-    <span id="progressPct">0%</span>
-  </div>
-  <div class="progress-track">
-    <div class="progress-fill" id="progressFill" style="width:0%"></div>
-  </div>
-  <div class="progress-segments" id="segments"></div>
-</div>
-
-<!-- Ring + Feed -->
-<div class="lower-grid">
-  <div class="ring-card">
-    <h3>Accuracy</h3>
-    <div class="ring-wrap">
-      <svg viewBox="0 0 140 140">
-        <defs>
-          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%"   stop-color="#3b82f6"/>
-            <stop offset="100%" stop-color="#a78bfa"/>
-          </linearGradient>
-        </defs>
-        <circle class="ring-bg"   cx="70" cy="70" r="58" fill="none" stroke-width="12"/>
-        <circle class="ring-fill" cx="70" cy="70" r="58" fill="none" stroke-width="12"
-          id="ringCircle"
-          stroke-dasharray="364.4"
-          stroke-dashoffset="364.4"/>
-      </svg>
-      <div class="ring-label">
-        <span class="ring-pct" id="ringPct">—%</span>
-        <span class="ring-sub">good</span>
-      </div>
-    </div>
-    <div style="font-size:.78rem;color:var(--muted);text-align:center" id="ringBaseline">
-      Baseline: 30.0%
-    </div>
-  </div>
-
-  <div class="feed-card">
-    <h3>Live feed — latest items</h3>
-    <div class="feed" id="feed">
-      <div class="empty">
-        <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        No results yet — run is starting…
-      </div>
-    </div>
-  </div>
-</div>
-
+<h1>SQL Explanation Grader — Model A vs Model B</h1>
+<div class="sub">Judge pass rate, dimensions, pair outcomes, disagreement cases, latency and token use.</div>
+<select id="run"></select>
+<div id="summary"></div>
+<div id="cases"></div>
 <script>
-  const CIRCUMFERENCE = 2 * Math.PI * 58; // 364.4
-  let lastDone = 0;
-  let startTime = null;
-  let pollInterval = null;
-
-  function getSelection() {
-    const r = document.getElementById('runSelect').value;
-    const s = document.getElementById('splitSelect').value;
-    return { run_id: r, split: s };
-  }
-
-  async function loadRuns() {
-    try {
-      const res = await fetch('/api/runs');
-      const runs = await res.json();
-      const sel = document.getElementById('runSelect');
-      sel.innerHTML = runs.length
-        ? runs.map(r => `<option value="${r.run_id}" data-split="${r.split}">${r.run_id} / ${r.split}</option>`).join('')
-        : '<option value="">No runs found</option>';
-      if (runs.length) {
-        // Default to the most recent
-        sel.selectedIndex = runs.length - 1;
-        const last = runs[runs.length - 1];
-        document.getElementById('splitSelect').value = last.split;
-      }
-    } catch(e) { console.warn('Could not load runs', e); }
-  }
-
-  function onRunChange() {
-    const sel = document.getElementById('runSelect');
-    const opt = sel.options[sel.selectedIndex];
-    if (opt && opt.dataset.split) {
-      document.getElementById('splitSelect').value = opt.dataset.split;
-    }
-    refresh();
-  }
-
-  async function refresh() {
-    const { run_id, split } = getSelection();
-    if (!run_id) return;
-    try {
-      const res = await fetch(`/api/status?run_id=${encodeURIComponent(run_id)}&split=${encodeURIComponent(split)}`);
-      const d = await res.json();
-      render(d);
-    } catch(e) { console.warn('Fetch error', e); }
-  }
-
-  function render(d) {
-    const isLive = d.exists && d.done < d.total;
-    const dot = document.getElementById('liveDot');
-    dot.className = 'pulse-dot' + (isLive ? '' : ' idle');
-
-    // Cards
-    set('statDone', d.done);
-    set('statTotal', `of ${d.total} items`);
-    set('statGood', d.good);
-    set('statBad',  d.bad);
-    set('statErr',  d.errors);
-
-    const scored = d.good + d.bad;
-    set('statGoodPct', scored ? (100*d.good/scored).toFixed(1)+'%' : '—%');
-    set('statBadPct',  scored ? (100*d.bad/scored).toFixed(1)+'%'  : '—%');
-    set('statLat', d.avg_latency ? d.avg_latency + 's' : '—');
-
-    // Progress bar
-    const fillPct = d.total > 0 ? (d.done / d.total * 100).toFixed(1) : 0;
-    document.getElementById('progressFill').style.width = fillPct + '%';
-    set('progressPct', fillPct + '%');
-    set('progressLabel', d.exists
-      ? (d.done >= d.total ? `✓ Complete — ${d.done}/${d.total} items` : `Running — ${d.done} / ${d.total} items`)
-      : 'Waiting for results file…');
-
-    // Segments
-    const segs = document.getElementById('segments');
-    if (d.total > 0 && d.rows && d.rows.length > 0) {
-      // Build a flat status map from rows (newest-first, so reverse)
-      const allRows = [...d.rows].reverse();
-      const n = Math.min(d.total, 80);
-      let html = '';
-      for (let i = 0; i < n; i++) {
-        const r = allRows[i];
-        if (!r) { html += '<div class="seg"></div>'; continue; }
-        const cls = r.error ? 'err' : r.score ? 'good' : 'bad';
-        html += `<div class="seg ${cls}" title="${r.id}: ${cls}"></div>`;
-      }
-      segs.innerHTML = html;
-    }
-
-    // ETA
-    if (isLive && d.avg_latency && d.done > 0) {
-      const remaining = d.total - d.done;
-      // rough estimate: remaining items / workers * avg_latency (assume 4 workers)
-      const etaSec = Math.round(remaining * d.avg_latency / 4);
-      const etaMin = Math.floor(etaSec / 60);
-      const etaSec2 = etaSec % 60;
-      set('etaChip', `⏱ ~${etaMin}m ${etaSec2}s left`);
-    } else if (!isLive && d.done > 0) {
-      set('etaChip', '✓ Done');
-    } else {
-      set('etaChip', '⏱ —');
-    }
-
-    // Ring
-    const pct = d.pct || 0;
-    const offset = CIRCUMFERENCE * (1 - pct / 100);
-    document.getElementById('ringCircle').style.strokeDashoffset = offset;
-    set('ringPct', pct.toFixed(1) + '%');
-
-    const delta = pct - 30.0;
-    const sign = delta >= 0 ? '+' : '';
-    set('ringBaseline', `Baseline: 30.0% (${sign}${delta.toFixed(1)}%)`);
-    document.getElementById('ringBaseline').style.color = delta >= 0 ? 'var(--good)' : 'var(--bad)';
-
-    // Feed
-    renderFeed(d.rows || []);
-  }
-
-  function renderFeed(rows) {
-    const feed = document.getElementById('feed');
-    if (!rows.length) {
-      feed.innerHTML = `<div class="empty">
-        <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        No results yet — run is starting…
-      </div>`;
-      return;
-    }
-
-    feed.innerHTML = rows.map(r => {
-      const cls   = r.error ? 'err' : r.score ? 'good' : 'bad';
-      const label = r.error ? 'ERROR' : r.score ? 'GOOD' : 'BAD';
-      const sql   = (r.input || '').replace(/</g,'&lt;').slice(0, 120);
-      const reason = r.error
-        ? `<span style="color:var(--warn)">${esc(r.error).slice(0,120)}</span>`
-        : esc((r.reason || '').slice(0, 140));
-      const lat = r.sys_cost && r.judge_cost
-        ? (r.sys_cost.latency + r.judge_cost.latency).toFixed(1) + 's'
-        : '—';
-      return `
-        <div class="feed-item">
-          <span class="feed-badge ${cls}">${label}</span>
-          <div class="feed-body">
-            <div class="feed-id">${r.id}</div>
-            <div class="feed-sql">${sql}</div>
-            <div class="feed-reason">${reason}</div>
-          </div>
-          <span class="feed-latency">${lat}</span>
-        </div>`;
-    }).join('');
-  }
-
-  function set(id, val) { document.getElementById(id).textContent = val; }
-  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  function exportPdf() {
-    const runId = document.getElementById('runSelect').value || 'v2';
-    const split = document.getElementById('splitSelect').value || 'dev';
-    window.open(`/api/export-pdf?run_id=${encodeURIComponent(runId)}&split=${encodeURIComponent(split)}`, '_blank');
-  }
-
-  // Init
-  (async () => {
-    await loadRuns();
-    await refresh();
-    pollInterval = setInterval(refresh, 5000);
-  })();
+const pct=(n,d)=>d?(100*n/d).toFixed(1)+'%':'—';
+const avg=a=>a.length?(a.reduce((x,y)=>x+y,0)/a.length).toFixed(2):'—';
+async function loadRuns(){
+  const runs=await (await fetch('/api/runs')).json();
+  run.innerHTML=runs.map(x=>'<option>'+x+'</option>').join('');
+  run.onchange=load;
+  if(runs.length) load();
+}
+async function load(){
+  const rows=await (await fetch('/api/results/'+encodeURIComponent(run.value))).json();
+  if(!rows.length){summary.innerHTML='<p>No comparison rows.</p>';cases.innerHTML='';return;}
+  const n=rows.length,a=rows.reduce((s,r)=>s+(r.model_a?.score||0),0),b=rows.reduce((s,r)=>s+(r.model_b?.score||0),0);
+  const out={}; rows.forEach(r=>out[r.outcome]=(out[r.outcome]||0)+1);
+  const al=rows.map(r=>r.model_a?.generation_cost?.latency).filter(x=>x!=null);
+  const bl=rows.map(r=>r.model_b?.generation_cost?.latency).filter(x=>x!=null);
+  const ai=rows.map(r=>r.model_a?.generation_cost?.in_tok).filter(x=>x!=null);
+  const bi=rows.map(r=>r.model_b?.generation_cost?.in_tok).filter(x=>x!=null);
+  const ao=rows.map(r=>r.model_a?.generation_cost?.out_tok).filter(x=>x!=null);
+  const bo=rows.map(r=>r.model_b?.generation_cost?.out_tok).filter(x=>x!=null);
+  summary.innerHTML='<div class="grid">'+
+    '<div class="card"><div class="muted">'+rows[0].model_a_name+'</div><div class="big">'+pct(a,n)+'</div>judge pass rate</div>'+
+    '<div class="card"><div class="muted">'+rows[0].model_b_name+'</div><div class="big">'+pct(b,n)+'</div>judge pass rate</div>'+
+    '<div class="card"><div class="muted">Disagreements</div><div class="big">'+rows.filter(r=>r.disagreement).length+'</div></div>'+
+    '<div class="card"><div class="muted">Rows</div><div class="big">'+n+'</div></div></div>'+
+    '<table><tr><th>Pair outcome</th><th>Count</th></tr>'+
+    ['both_correct','only_a_correct','only_b_correct','both_wrong'].map(k=>'<tr><td>'+k+'</td><td>'+(out[k]||0)+'</td></tr>').join('')+'</table>'+
+    '<table><tr><th>Metric</th><th>Model A</th><th>Model B</th></tr>'+
+    '<tr><td>Avg generation latency (s)</td><td>'+avg(al)+'</td><td>'+avg(bl)+'</td></tr>'+
+    '<tr><td>Avg input tokens</td><td>'+avg(ai)+'</td><td>'+avg(bi)+'</td></tr>'+
+    '<tr><td>Avg output tokens</td><td>'+avg(ao)+'</td><td>'+avg(bo)+'</td></tr></table>';
+  cases.innerHTML=rows.map(r=>'<div class="case"><b>'+r.id+'</b> <span class="muted">'+(r.categories||[]).join(', ')+' · '+r.outcome+'</span>'+
+    '<pre>'+escapeHtml(r.sql||'')+'</pre><div class="ab">'+panel('A',r.model_a,r.model_a_name)+panel('B',r.model_b,r.model_b_name)+'</div></div>').join('');
+}
+function panel(label,m,name){if(!m)return '<div></div>';const d=m.dimensions||{};return '<div><h3>'+label+' — '+name+' <span class="'+(m.score?'good':'bad')+'">'+(m.score?'PASS':'FAIL')+'</span></h3>'+
+'<div class="muted">correct '+!!d.correctness+' · complete '+!!d.completeness+' · no hallucination '+!!d.hallucination_free+' · clear '+!!d.clarity+'</div>'+
+'<pre>'+escapeHtml(m.explanation||'')+'</pre><div>'+escapeHtml(m.judge_reason||'')+'</div></div>'}
+function escapeHtml(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+loadRuns();
 </script>
-</body>
-</html>
+</body></html>
