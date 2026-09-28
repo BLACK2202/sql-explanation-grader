@@ -6,7 +6,7 @@ This project generates or grades plain-language explanations of SQLite `SELECT` 
 
 - Python 3.10 or newer
 - Ollama running locally
-- `llama3.2:3b` and `qwen2.5:3b` installed, or equivalent models passed on the command line
+- At least one model pulled (e.g. `qwen2.5:7b` for generation, `qwen2.5:3b` for judging)
 
 Install Python dependencies:
 
@@ -14,29 +14,49 @@ Install Python dependencies:
 python -m pip install -r requirements.txt
 ```
 
-Validate the generated SQL:
+## Running
+
+### Validate the dataset
 
 ```powershell
 python harness/validate.py
 ```
 
-Run the one-item smoke test:
+### Smoke test (1 item)
 
 ```powershell
-python harness/run.py tiny prompts/v1.md smoke
+python harness/run.py tiny prompts/v2.md smoke
 ```
 
-Run the development or test split:
+### Development split
 
 ```powershell
-python harness/run.py dev prompts/v1.md v1
-python harness/run.py test prompts/v1.md v1
+python harness/run.py dev prompts/v2.md v2 --system-model qwen2.5:7b --judge-model qwen2.5:3b
 ```
 
-Results are written to `results/<run_id>_<split>.jsonl`. Each row contains the generated explanation, binary score, judge reason, latency, and token counts.
-
-To use different local models:
+### Test split
 
 ```powershell
-python harness/run.py tiny prompts/v1.md smoke --system-model llama3.2:3b --judge-model qwen2.5:3b
+python harness/run.py test prompts/v2.md v2 --system-model qwen2.5:7b --judge-model qwen2.5:3b
 ```
+
+Results are written to `results/<run_id>_<split>.jsonl`. Each row contains the generated explanation, binary score, judge reason, latency, and token counts. Runs that crash mid-way automatically resume from where they left off.
+
+## Options
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--system-model` | `qwen2.5:7b` | Model used to generate explanations |
+| `--judge-model` | `qwen2.5:3b` | Model used to grade explanations |
+| `--workers` | `4` | Number of parallel threads |
+| `--judge-prompt` | `prompts/judge.md` | Path to the versioned judge system prompt |
+
+## Prompts
+
+| File | Description |
+|------|-------------|
+| `prompts/v1.md` | Initial baseline prompt (30% accuracy) |
+| `prompts/v2.md` | Improved 10-step checklist prompt |
+| `prompts/judge.md` | Versioned judge system prompt |
+
+See `prompts/CHANGELOG.md` for the full prompt evolution history.
