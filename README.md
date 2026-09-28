@@ -60,3 +60,17 @@ Results are written to `results/<run_id>_<split>.jsonl`. Each row contains the g
 | `prompts/judge.md` | Versioned judge system prompt |
 
 See `prompts/CHANGELOG.md` for the full prompt evolution history.
+
+## PDF Reports
+
+Generate publication-ready PDF evaluation reports with executive summaries, pass-rate gauges, feature breakdowns, and itemized critique:
+
+```bash
+# Generate a PDF report for any results file
+python harness/export_pdf.py results/v2_dev.jsonl
+
+# Specify custom output destination
+python harness/export_pdf.py results/v2_dev.jsonl -o reports/v2_dev_summary.pdf
+```
+
+You can also download PDF reports directly from the live dashboard (`http://localhost:7860`) by clicking the **"Export PDF"** button.

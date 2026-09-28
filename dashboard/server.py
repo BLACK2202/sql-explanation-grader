@@ -94,6 +94,34 @@ class Handler(BaseHTTPRequestHandler):
             run_id = params.get("run_id", "v2")
             split = params.get("split", "dev")
             self._json(read_results(run_id, split))
+        elif self.path.startswith("/api/export-pdf"):
+            params = dict(p.split("=") for p in self.path.split("?", 1)[-1].split("&") if "=" in p)
+            run_id = params.get("run_id", "v2")
+            split = params.get("split", "dev")
+            results_file = RESULTS_DIR / f"{run_id}_{split}.jsonl"
+            if not results_file.exists():
+                self.send_response(404)
+                self.end_headers()
+                return
+
+            try:
+                # Import export helper
+                from harness.export_pdf import generate_pdf_report
+                pdf_path = RESULTS_DIR / f"{run_id}_{split}_report.pdf"
+                generate_pdf_report(results_file, pdf_path, DATA_DIR)
+                pdf_bytes = pdf_path.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/pdf")
+                self.send_header("Content-Disposition", f'attachment; filename="{run_id}_{split}_report.pdf"')
+                self.send_header("Content-Length", len(pdf_bytes))
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(pdf_bytes)
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-Type", "text/plain")
+                self.end_headers()
+                self.wfile.write(f"PDF generation error: {e}".encode())
         else:
             self.send_response(404)
             self.end_headers()

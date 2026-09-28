@@ -52,6 +52,11 @@ parser.add_argument(
     default=pathlib.Path("prompts/judge.md"),
     help="Path to the judge system prompt file.",
 )
+parser.add_argument(
+    "--no-pdf",
+    action="store_true",
+    help="Disable automatic PDF report generation on completion.",
+)
 args = parser.parse_args()
 
 for p, label in ((args.prompt_file, "prompt file"), (args.judge_prompt, "judge prompt")):
@@ -160,7 +165,7 @@ with open(out_path, "a", encoding="utf-8") as out_file:
                 pbar.update(1)
 
 # ---------------------------------------------------------------------------
-# Summary
+# Summary & PDF Report
 # ---------------------------------------------------------------------------
 scored = [r for r in all_rows if r["error"] is None]
 errors = [r for r in all_rows if r["error"] is not None]
@@ -176,6 +181,17 @@ logger.info(
     pct,
     len(errors),
 )
+
+# Generate PDF report
+if not getattr(args, "no_pdf", False):
+    try:
+        from export_pdf import generate_pdf_report
+        pdf_out = out_path.parent / f"{out_path.stem}_report.pdf"
+        generate_pdf_report(out_path, pdf_out, data_dir=pathlib.Path("data"))
+        logger.info("PDF Report generated: %s", pdf_out)
+    except Exception as e:
+        logger.warning("Could not auto-generate PDF report: %s", e)
+
 if errors:
     logger.warning("Failed items: %s", [e["id"] for e in errors])
     sys.exit(1)
