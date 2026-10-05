@@ -52,7 +52,7 @@ def mask_sql(sql: str) -> str:
                 j += 1
             i = j
             continue
-        if chars[i] in ("'", '"', "\`"):
+        if chars[i] in ("'", '"') or chars[i] == chr(96):
             quote = chars[i]
             chars[i] = " "
             i += 1
