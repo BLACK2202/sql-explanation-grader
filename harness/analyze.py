@@ -1,39 +1,23 @@
-"""Analyze side-by-side benchmark results.
-
-Usage:
-  python harness/analyze.py results/qwen_vs_llama_dev.jsonl
-
-Important terminology: without human/golden validation, this tool reports
-"judge pass rate", not true accuracy.
-"""
+"""Statistical analysis for benchmark-v3 two-model results."""
 from __future__ import annotations
 
 import argparse
 import json
 import pathlib
-from collections import Counter, defaultdict
-from statistics import mean
+
+from metrics import DIMENSIONS, summarize
 
 
-def load(path: pathlib.Path) -> list[dict]:
-    rows = []
-    with path.open(encoding="utf-8") as f:
-        for line in f:
-            if line.strip():
-                rows.append(json.loads(line))
-    return rows
+def load_jsonl(path: pathlib.Path) -> list[dict]:
+    return [json.loads(line) for line in path.open(encoding="utf-8") if line.strip()]
 
 
-def pct(n: int, d: int) -> str:
-    return f"{100*n/d:.1f}%" if d else "—"
+def pct(value):
+    return "—" if value is None else f"{value:.1f}%"
 
 
-def avg(values: list[float]) -> str:
-    return f"{mean(values):.2f}" if values else "—"
-
-
-def print_table(headers: list[str], rows: list[list[str]]) -> None:
-    widths = [len(h) for h in headers]
+def table(headers, rows):
+    widths = [len(str(h)) for h in headers]
     for row in rows:
         for i, cell in enumerate(row):
             widths[i] = max(widths[i], len(str(cell)))
@@ -44,90 +28,90 @@ def print_table(headers: list[str], rows: list[list[str]]) -> None:
         print(fmt.format(*row))
 
 
-def summarize(rows: list[dict]) -> dict:
-    valid = [r for r in rows if not r.get("error") and r.get("model_a") and r.get("model_b")]
+def gold_agreement(rows, gold_path):
+    gold = {r["id"]: r for r in load_jsonl(gold_path)}
+    valid = [r for r in rows if r.get("id") in gold and r.get("model_a", {}).get("score") is not None and r.get("model_b", {}).get("score") is not None]
     if not valid:
-        return {"valid": []}
-    a_name = valid[0].get("model_a_name", "Model A")
-    b_name = valid[0].get("model_b_name", "Model B")
-    dims = ["correctness", "completeness", "hallucination_free", "clarity"]
-    summary = {
-        "valid": valid,
-        "a_name": a_name,
-        "b_name": b_name,
-        "a_pass": sum(r["model_a"]["score"] for r in valid),
-        "b_pass": sum(r["model_b"]["score"] for r in valid),
-        "outcomes": Counter(r["outcome"] for r in valid),
-        "a_dims": {d: sum(bool(r["model_a"]["dimensions"].get(d)) for r in valid) for d in dims},
-        "b_dims": {d: sum(bool(r["model_b"]["dimensions"].get(d)) for r in valid) for d in dims},
-        "a_lat": [r["model_a"]["generation_cost"]["latency"] for r in valid if r["model_a"].get("generation_cost")],
-        "b_lat": [r["model_b"]["generation_cost"]["latency"] for r in valid if r["model_b"].get("generation_cost")],
-        "a_in": [r["model_a"]["generation_cost"]["in_tok"] for r in valid if r["model_a"].get("generation_cost")],
-        "b_in": [r["model_b"]["generation_cost"]["in_tok"] for r in valid if r["model_b"].get("generation_cost")],
-        "a_out": [r["model_a"]["generation_cost"]["out_tok"] for r in valid if r["model_a"].get("generation_cost")],
-        "b_out": [r["model_b"]["generation_cost"]["out_tok"] for r in valid if r["model_b"].get("generation_cost")],
-    }
-    return summary
+        return None
+    out = {}
+    for label, key in (("A", "model_a_score"), ("B", "model_b_score")):
+        comparable = [r for r in valid if key in gold[r["id"]]]
+        matches = sum(bool(r["model_" + label.lower()]["score"]) == bool(gold[r["id"]][key]) for r in comparable)
+        out[label] = {
+            "matches": matches,
+            "n": len(comparable),
+            "agreement_pct": 100 * matches / len(comparable) if comparable else None,
+        }
+    return out
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser(description="Analyze a two-model SQL explanation benchmark.")
+def main():
+    ap = argparse.ArgumentParser(description="Analyze paired SQL explanation benchmark results.")
     ap.add_argument("results", type=pathlib.Path)
+    ap.add_argument("--gold", type=pathlib.Path, help="Optional JSONL with id, model_a_score, model_b_score (0/1).")
+    ap.add_argument("--json", action="store_true", help="Print machine-readable summary.")
     args = ap.parse_args()
-    rows = load(args.results)
-    s = summarize(rows)
-    valid = s["valid"]
-    if not valid:
-        print("No valid comparison rows found.")
+
+    rows = load_jsonl(args.results)
+    summary = summarize(rows)
+    if args.gold:
+        summary["gold_agreement"] = gold_agreement(rows, args.gold)
+
+    if args.json:
+        print(json.dumps(summary, indent=2, ensure_ascii=False))
         return
 
-    n = len(valid)
-    print(f"\nComparison: {s['a_name']} vs {s['b_name']}")
-    print(f"Valid items: {n} | Errors: {len(rows)-n}")
-    print("Metric note: pass percentages below are judge pass rates, not true accuracy unless validated against human/golden labels.\n")
+    if not summary["n_valid"]:
+        print("No valid A/B comparison rows found.")
+        return
 
-    print_table(
-        ["Metric", s["a_name"], s["b_name"]],
-        [
-            ["Judge pass rate", pct(s["a_pass"], n), pct(s["b_pass"], n)],
-            ["Correctness", pct(s["a_dims"]["correctness"], n), pct(s["b_dims"]["correctness"], n)],
-            ["Completeness", pct(s["a_dims"]["completeness"], n), pct(s["b_dims"]["completeness"], n)],
-            ["Hallucination-free", pct(s["a_dims"]["hallucination_free"], n), pct(s["b_dims"]["hallucination_free"], n)],
-            ["Clarity", pct(s["a_dims"]["clarity"], n), pct(s["b_dims"]["clarity"], n)],
-            ["Avg generation latency (s)", avg(s["a_lat"]), avg(s["b_lat"])],
-            ["Avg input tokens", avg(s["a_in"]), avg(s["b_in"])],
-            ["Avg output tokens", avg(s["a_out"]), avg(s["b_out"])],
-        ],
-    )
+    print(f"\n{summary['a_name']} vs {summary['b_name']}")
+    print(f"Valid comparisons: {summary['n_valid']} | evaluation errors: {summary['n_errors']}")
+    print("Metric note: percentages below are judge pass rates. They are not true accuracy unless externally validated against human/golden labels.\n")
+
+    metric_rows = [
+        ["Judge pass rate", pct(summary["a_pass_rate_pct"]), pct(summary["b_pass_rate_pct"])],
+        *[[d.replace("_", " ").title(), pct(summary["a_dimensions_pct"][d]), pct(summary["b_dimensions_pct"][d])] for d in DIMENSIONS],
+        ["Avg generation latency (s)", f"{summary['a_latency_avg_s']:.3f}", f"{summary['b_latency_avg_s']:.3f}"],
+        ["Median generation latency (s)", f"{summary['a_latency_median_s']:.3f}", f"{summary['b_latency_median_s']:.3f}"],
+        ["Avg input tokens*", f"{summary['a_in_tok_avg']:.1f}", f"{summary['b_in_tok_avg']:.1f}"],
+        ["Avg output tokens*", f"{summary['a_out_tok_avg']:.1f}", f"{summary['b_out_tok_avg']:.1f}"],
+        ["Avg output tok/s", f"{summary['a_tok_per_s_avg']:.1f}", f"{summary['b_tok_per_s_avg']:.1f}"],
+    ]
+    table(["Metric", summary["a_name"], summary["b_name"]], metric_rows)
+    print("* Token counts are tokenizer/model-specific; compare them as observed resource metrics, not identical units across architectures.")
+
+    boot = summary["bootstrap"]
+    print(f"\nPaired difference (B − A): {boot['delta_pct']:+.1f} percentage points; 95% bootstrap CI [{boot['ci_low_pct']:+.1f}, {boot['ci_high_pct']:+.1f}]")
+    print(f"Exact McNemar p-value on disagreements: {summary['mcnemar_exact_p'] if summary['mcnemar_exact_p'] is not None else '—'}")
 
     print("\nPair outcomes")
-    for key in ("both_correct", "only_a_correct", "only_b_correct", "both_wrong"):
-        print(f"  {key:18s} {s['outcomes'].get(key,0):4d}  ({pct(s['outcomes'].get(key,0), n)})")
-    print(f"  {'disagreement':18s} {sum(r['disagreement'] for r in valid):4d}  ({pct(sum(r['disagreement'] for r in valid), n)})")
+    for key in ("both_correct", "only_a_correct", "only_b_correct", "both_wrong", "evaluation_error"):
+        n = summary["pair_counts"].get(key, 0)
+        if n or key != "evaluation_error":
+            print(f"  {key:18s} {n:4d} ({100*n/summary['n_valid']:.1f}% of valid)")
 
-    categories: dict[str, list[dict]] = defaultdict(list)
-    for r in valid:
-        for c in r.get("categories", []):
-            categories[c].append(r)
     print("\nBy SQL category")
-    table = []
-    for category in ("JOIN", "WHERE", "GROUP BY", "HAVING", "ORDER BY", "aggregation", "subquery", "LIMIT", "DISTINCT"):
-        subset = categories.get(category, [])
-        if not subset:
-            continue
-        a = sum(r["model_a"]["score"] for r in subset)
-        b = sum(r["model_b"]["score"] for r in subset)
-        dis = sum(r["disagreement"] for r in subset)
-        table.append([category, str(len(subset)), pct(a, len(subset)), pct(b, len(subset)), pct(dis, len(subset))])
-    print_table(["Category", "N", f"{s['a_name']} pass", f"{s['b_name']} pass", "Disagree"], table)
+    cat_rows = []
+    for category, data in summary["category"].items():
+        cat_rows.append([category, data["n"], pct(data["a_pass_rate_pct"]), pct(data["b_pass_rate_pct"]), pct(data["disagreement_pct"])])
+    table(["Category", "N", summary["a_name"] + " pass", summary["b_name"] + " pass", "Disagree"], cat_rows)
 
-    disagreements = [r for r in valid if r["disagreement"]]
+    fairness = {r.get("benchmark_fairness_sha256") for r in rows if r.get("benchmark_fairness_sha256")}
+    if len(fairness) > 1:
+        print(f"\nWARNING: {len(fairness)} benchmark fairness hashes are present. Do not pool these rows into one comparison.")
+
+    if args.gold:
+        print("\nExternal gold-label agreement")
+        print(json.dumps(summary["gold_agreement"], indent=2))
+
+    disagreements = [r for r in rows if r.get("disagreement") and not r.get("error")]
     if disagreements:
         print("\nDisagreement cases")
-        for r in disagreements[:20]:
+        for r in disagreements[:25]:
             print(f"  {r['id']} | {r['outcome']} | {', '.join(r.get('categories', [])) or 'basic SELECT'}")
-            print(f"    A: {r['model_a']['judge_reason']}")
-            print(f"    B: {r['model_b']['judge_reason']}")
+            print(f"    A: {r['model_a'].get('judge_reason')}")
+            print(f"    B: {r['model_b'].get('judge_reason')}")
 
 
 if __name__ == "__main__":

@@ -12,11 +12,11 @@ class Explanation(BaseModel):
 
 
 class Verdict(BaseModel):
-    """Structured judge verdict for one explanation."""
+    """Structured, dimension-level judge verdict."""
 
     grade: Literal["good", "bad"]
-    correctness: bool = Field(..., description="No incorrect claims about query semantics or result.")
-    completeness: bool = Field(..., description="Covers all SQL operations that are actually present and material.")
-    hallucination_free: bool = Field(..., description="Does not invent tables, columns, filters, joins, or behavior.")
-    clarity: bool = Field(..., description="Clear plain-language explanation understandable by a non-expert.")
-    reason: str = Field(..., min_length=5, description="Concise evidence-based reason for the verdict.")
+    correctness: bool = Field(..., description="No material semantic error about what the SQL returns.")
+    completeness: bool = Field(..., description="Covers every material SQL operation that is actually present.")
+    hallucination_free: bool = Field(..., description="Does not invent schema, predicates, joins, ordering, grouping, or business meaning.")
+    clarity: bool = Field(..., description="Clear enough for a non-expert reader to follow.")
+    reason: str = Field(..., min_length=5, description="Short evidence-based reason tied to the supplied SQL.")

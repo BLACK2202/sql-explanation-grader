@@ -1,67 +1,98 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SQL Explanation Grader — A/B</title>
 <style>
-body{font-family:system-ui,Arial;background:#0b1020;color:#e8edf8;margin:0;padding:24px}
-h1{margin:0 0 8px}.sub{color:#9aa6bd;margin-bottom:20px}
-select{padding:8px 12px;border-radius:8px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
-.card,.case{background:#141b2d;border:1px solid #26314d;border-radius:12px;padding:16px}
-.big{font-size:28px;font-weight:700}.muted{color:#9aa6bd}
-table{width:100%;border-collapse:collapse;margin:16px 0;background:#141b2d}
-th,td{padding:10px;border-bottom:1px solid #26314d;text-align:left}
-.ab{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-pre{white-space:pre-wrap;background:#0e1424;padding:12px;border-radius:8px}
-.good{color:#6ee7a8}.bad{color:#ff8f8f}
-@media(max-width:900px){.grid,.ab{grid-template-columns:1fr}}
+:root{--bg:#080d18;--panel:#111827;--panel2:#172033;--line:#26334b;--text:#e5edf8;--muted:#8fa0b8;--a:#60a5fa;--b:#a78bfa;--good:#34d399;--bad:#fb7185;--warn:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#16213a 0,#080d18 42%);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;padding:28px}
+.wrap{max-width:1500px;margin:auto}.head{display:flex;gap:16px;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px}.title{font-size:28px;font-weight:800}.sub{color:var(--muted);max-width:900px}.controls{display:flex;gap:8px;flex-wrap:wrap}select,input,button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 11px}button{cursor:pointer}.notice{background:#241d0b;border:1px solid #6a5418;color:#f9d77d;border-radius:10px;padding:10px 12px;margin:12px 0}.grid{display:grid;grid-template-columns:repeat(6,minmax(140px,1fr));gap:12px}.card,.panel,.case{background:rgba(17,24,39,.94);border:1px solid var(--line);border-radius:14px;padding:16px}.label{text-transform:uppercase;font-size:10px;letter-spacing:.09em;color:var(--muted)}.value{font-size:25px;font-weight:800;margin-top:4px}.a{color:var(--a)}.b{color:var(--b)}.good{color:var(--good)}.bad{color:var(--bad)}.warn{color:var(--warn)}.muted{color:var(--muted)}.section{margin-top:18px}.section h2{font-size:16px;margin:0 0 10px}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.table th{color:var(--muted);font-size:11px;text-transform:uppercase}.sql,.explain{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#0b1220;border:1px solid var(--line);padding:10px;border-radius:9px;white-space:pre-wrap;overflow:auto}.explain{font-family:inherit;min-height:80px}.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.chip{border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:11px}.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:8px 0}.metric{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px;font-size:12px}.case{padding:0;overflow:hidden;margin-top:9px}.case summary{cursor:pointer;padding:13px;list-style:none}.case summary::-webkit-details-marker{display:none}.case-body{padding:0 13px 15px}.empty{text-align:center;color:var(--muted);padding:30px}.mini{font-size:12px}@media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){body{padding:14px}.grid,.two{grid-template-columns:1fr}.metric-grid{grid-template-columns:1fr}}
 </style>
 </head>
-<body>
-<h1>SQL Explanation Grader — Model A vs Model B</h1>
-<div class="sub">Judge pass rate, dimensions, pair outcomes, disagreement cases, latency and token use.</div>
-<select id="run"></select>
-<div id="summary"></div>
-<div id="cases"></div>
+<body><div class="wrap">
+<div class="head"><div><div class="title">SQL Explanation Grader — <span class="a">Model A</span> vs <span class="b">Model B</span></div><div class="sub">Same SQL, schema, prompt and generation settings. Same judge. <b>Judge pass rate is not true accuracy</b> unless externally validated against human/golden labels.</div></div><div class="controls"><select id="run"></select><button id="pdf">Export PDF</button></div></div>
+<div id="notice"></div>
+<div id="cards" class="grid"></div>
+<div class="section two"><div class="panel"><h2>Dimension comparison</h2><div id="dims"></div></div><div class="panel"><h2>Pair outcomes</h2><div id="pairs"></div></div></div>
+<div class="section panel"><h2>Performance by SQL category</h2><div id="cats"></div></div>
+<div class="section panel"><div class="controls" style="justify-content:space-between"><h2>Per-query comparison</h2><span><input id="search" placeholder="Search id or SQL"><select id="filter"><option value="all">All outcomes</option><option value="both_correct">Both correct</option><option value="only_a_correct">Only A correct</option><option value="only_b_correct">Only B correct</option><option value="both_wrong">Both wrong</option><option value="evaluation_error">Evaluation error</option></select></span></div><div id="cases"></div></div>
+</div>
 <script>
-const pct=(n,d)=>d?(100*n/d).toFixed(1)+'%':'—';
-const avg=a=>a.length?(a.reduce((x,y)=>x+y,0)/a.length).toFixed(2):'—';
-async function loadRuns(){
-  const runs=await (await fetch('/api/runs')).json();
-  run.innerHTML=runs.map(x=>'<option>'+x+'</option>').join('');
-  run.onchange=load;
-  if(runs.length) load();
+var rows=[];
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function pct(n,d){return d?(100*n/d).toFixed(1)+'%':'—'}
+function avg(a){return a.length?(a.reduce(function(x,y){return x+y},0)/a.length).toFixed(2):'—'}
+function valid(){return rows.filter(function(r){return !r.error&&r.model_a&&r.model_b&&r.model_a.score!=null&&r.model_b.score!=null})}
+function loadRuns(){
+ fetch('/api/runs').then(function(r){return r.json()}).then(function(runs){
+  $('run').innerHTML=runs.map(function(x){return '<option value="'+esc(x)+'">'+esc(x)+'</option>'}).join('');
+  $('run').onchange=load;
+  $('search').oninput=renderCases;
+  $('filter').onchange=renderCases;
+  $('pdf').onclick=function(){if($('run').value)window.location='/api/export-pdf/'+encodeURIComponent($('run').value)};
+  if(runs.length)load();else $('notice').innerHTML='<div class="notice">No result JSONL files found in results/.</div>';
+ })
 }
-async function load(){
-  const rows=await (await fetch('/api/results/'+encodeURIComponent(run.value))).json();
-  if(!rows.length){summary.innerHTML='<p>No comparison rows.</p>';cases.innerHTML='';return;}
-  const n=rows.length,a=rows.reduce((s,r)=>s+(r.model_a?.score||0),0),b=rows.reduce((s,r)=>s+(r.model_b?.score||0),0);
-  const out={}; rows.forEach(r=>out[r.outcome]=(out[r.outcome]||0)+1);
-  const al=rows.map(r=>r.model_a?.generation_cost?.latency).filter(x=>x!=null);
-  const bl=rows.map(r=>r.model_b?.generation_cost?.latency).filter(x=>x!=null);
-  const ai=rows.map(r=>r.model_a?.generation_cost?.in_tok).filter(x=>x!=null);
-  const bi=rows.map(r=>r.model_b?.generation_cost?.in_tok).filter(x=>x!=null);
-  const ao=rows.map(r=>r.model_a?.generation_cost?.out_tok).filter(x=>x!=null);
-  const bo=rows.map(r=>r.model_b?.generation_cost?.out_tok).filter(x=>x!=null);
-  summary.innerHTML='<div class="grid">'+
-    '<div class="card"><div class="muted">'+rows[0].model_a_name+'</div><div class="big">'+pct(a,n)+'</div>judge pass rate</div>'+
-    '<div class="card"><div class="muted">'+rows[0].model_b_name+'</div><div class="big">'+pct(b,n)+'</div>judge pass rate</div>'+
-    '<div class="card"><div class="muted">Disagreements</div><div class="big">'+rows.filter(r=>r.disagreement).length+'</div></div>'+
-    '<div class="card"><div class="muted">Rows</div><div class="big">'+n+'</div></div></div>'+
-    '<table><tr><th>Pair outcome</th><th>Count</th></tr>'+
-    ['both_correct','only_a_correct','only_b_correct','both_wrong'].map(k=>'<tr><td>'+k+'</td><td>'+(out[k]||0)+'</td></tr>').join('')+'</table>'+
-    '<table><tr><th>Metric</th><th>Model A</th><th>Model B</th></tr>'+
-    '<tr><td>Avg generation latency (s)</td><td>'+avg(al)+'</td><td>'+avg(bl)+'</td></tr>'+
-    '<tr><td>Avg input tokens</td><td>'+avg(ai)+'</td><td>'+avg(bi)+'</td></tr>'+
-    '<tr><td>Avg output tokens</td><td>'+avg(ao)+'</td><td>'+avg(bo)+'</td></tr></table>';
-  cases.innerHTML=rows.map(r=>'<div class="case"><b>'+r.id+'</b> <span class="muted">'+(r.categories||[]).join(', ')+' · '+r.outcome+'</span>'+
-    '<pre>'+escapeHtml(r.sql||'')+'</pre><div class="ab">'+panel('A',r.model_a,r.model_a_name)+panel('B',r.model_b,r.model_b_name)+'</div></div>').join('');
+function load(){
+ fetch('/api/results/'+encodeURIComponent($('run').value)).then(function(r){return r.json()}).then(function(data){rows=data;render()})
 }
-function panel(label,m,name){if(!m)return '<div></div>';const d=m.dimensions||{};return '<div><h3>'+label+' — '+name+' <span class="'+(m.score?'good':'bad')+'">'+(m.score?'PASS':'FAIL')+'</span></h3>'+
-'<div class="muted">correct '+!!d.correctness+' · complete '+!!d.completeness+' · no hallucination '+!!d.hallucination_free+' · clear '+!!d.clarity+'</div>'+
-'<pre>'+escapeHtml(m.explanation||'')+'</pre><div>'+escapeHtml(m.judge_reason||'')+'</div></div>'}
-function escapeHtml(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function render(){
+ var v=valid(),n=v.length,a=v.filter(function(r){return r.model_a.score}).length,b=v.filter(function(r){return r.model_b.score}).length,dis=v.filter(function(r){return r.disagreement}).length,err=rows.length-n;
+ var al=v.map(function(r){return r.model_a.generation_cost&&r.model_a.generation_cost.latency_s}).filter(function(x){return x!=null});
+ var bl=v.map(function(r){return r.model_b.generation_cost&&r.model_b.generation_cost.latency_s}).filter(function(x){return x!=null});
+ var at=v.map(function(r){return r.model_a.generation_cost&&r.model_a.generation_cost.tok_per_s}).filter(function(x){return x!=null});
+ var bt=v.map(function(r){return r.model_b.generation_cost&&r.model_b.generation_cost.tok_per_s}).filter(function(x){return x!=null});
+ var an=rows[0]&&rows[0].model_a_name||'Model A',bn=rows[0]&&rows[0].model_b_name||'Model B';
+ $('notice').innerHTML='<div class="notice">Pass percentages are judge pass rates. Raw token counts use each model tokenizer and are not perfectly equivalent across architectures.'+(err?' <b>'+err+'</b> evaluation-error row(s) are excluded from pass-rate statistics.':'')+'</div>';
+ $('cards').innerHTML=
+  '<div class="card"><div class="label">'+esc(an)+' pass</div><div class="value a">'+pct(a,n)+'</div><div class="muted">'+a+'/'+n+'</div></div>'+
+  '<div class="card"><div class="label">'+esc(bn)+' pass</div><div class="value b">'+pct(b,n)+'</div><div class="muted">'+b+'/'+n+'</div></div>'+
+  '<div class="card"><div class="label">B − A</div><div class="value">'+(n?((100*(b-a)/n>=0?'+':'')+(100*(b-a)/n).toFixed(1)+' pp'):'—')+'</div><div class="muted">paired pass difference</div></div>'+
+  '<div class="card"><div class="label">Disagreements</div><div class="value warn">'+dis+'</div><div class="muted">'+pct(dis,n)+' of valid</div></div>'+
+  '<div class="card"><div class="label">Latency avg</div><div class="value">'+avg(al)+' / '+avg(bl)+'s</div><div class="muted">A / B</div></div>'+
+  '<div class="card"><div class="label">Output tok/s</div><div class="value">'+avg(at)+' / '+avg(bt)+'</div><div class="muted">A / B</div></div>';
+ renderDims(v,n,an,bn);renderPairs(v,n);renderCats(v,an,bn);renderCases();
+ var hashes={};rows.forEach(function(r){if(r.benchmark_fairness_sha256)hashes[r.benchmark_fairness_sha256]=1});
+ if(Object.keys(hashes).length>1)$('notice').innerHTML+='<div class="notice">WARNING: multiple benchmark fairness hashes are present. Do not pool these rows as one fair comparison.</div>';
+}
+function renderDims(v,n,an,bn){
+ var ds=['correctness','completeness','hallucination_free','clarity'];
+ $('dims').innerHTML='<table class="table"><tr><th>Dimension</th><th>'+esc(an)+'</th><th>'+esc(bn)+'</th></tr>'+
+ ds.map(function(d){return '<tr><td>'+d.replace('_',' ')+'</td><td class="a">'+pct(v.filter(function(r){return r.model_a.dimensions&&r.model_a.dimensions[d]}).length,n)+'</td><td class="b">'+pct(v.filter(function(r){return r.model_b.dimensions&&r.model_b.dimensions[d]}).length,n)+'</td></tr>'}).join('')+'</table>'
+}
+function renderPairs(v,n){
+ var keys=['both_correct','only_a_correct','only_b_correct','both_wrong','evaluation_error'];
+ $('pairs').innerHTML='<table class="table"><tr><th>Outcome</th><th>Count</th><th>Share</th></tr>'+
+ keys.map(function(k){var c=v.filter(function(r){return r.outcome===k}).length;return '<tr><td>'+k+'</td><td>'+c+'</td><td>'+pct(c,n)+'</td></tr>'}).join('')+'</table>'
+}
+function renderCats(v,an,bn){
+ var cats={};v.forEach(function(r){(r.categories||[]).forEach(function(c){(cats[c]||(cats[c]=[])).push(r)})});
+ var order=['JOIN','WHERE','GROUP BY','HAVING','ORDER BY','aggregation','window','subquery','CTE','UNION','INTERSECT','EXCEPT','LIMIT','OFFSET','DISTINCT','CASE','EXISTS','IN','BETWEEN','LIKE','NULL filter'];
+ var used=order.filter(function(c){return cats[c]});
+ $('cats').innerHTML='<table class="table"><tr><th>Category</th><th>N</th><th>'+esc(an)+'</th><th>'+esc(bn)+'</th><th>Disagree</th></tr>'+
+ used.map(function(c){var q=cats[c],aa=q.filter(function(r){return r.model_a.score}).length,bb=q.filter(function(r){return r.model_b.score}).length,dd=q.filter(function(r){return r.disagreement}).length;return '<tr><td>'+esc(c)+'</td><td>'+q.length+'</td><td class="a">'+pct(aa,q.length)+'</td><td class="b">'+pct(bb,q.length)+'</td><td>'+pct(dd,q.length)+'</td></tr>'}).join('')+'</table>'
+}
+function dims(m){
+ return ['correctness','completeness','hallucination_free','clarity'].map(function(d){var ok=m&&m.dimensions&&m.dimensions[d];return '<span class="chip '+(ok?'good':'bad')+'">'+d.replace('_',' ')+': '+(ok?'✓':'✗')+'</span>'}).join('')
+}
+function panel(label,m,name,cls){
+ if(!m)return '<div class="metric"><b>'+label+'</b><div class="bad">No result</div></div>';
+ var gc=m.generation_cost||{};
+ return '<div><h3 class="'+cls+'">'+label+' — '+esc(name)+' <span class="'+(m.score?'good':'bad')+'">'+(m.score?'PASS':'FAIL')+'</span></h3>'+
+ '<div class="chips">'+dims(m)+'</div><div class="metric-grid"><div class="metric">Latency<br><b>'+(gc.latency_s==null?'—':gc.latency_s+'s')+'</b></div><div class="metric">Input tokens<br><b>'+(gc.in_tok==null?'—':gc.in_tok)+'</b></div><div class="metric">Output tokens<br><b>'+(gc.out_tok==null?'—':gc.out_tok)+'</b></div></div>'+
+ '<div class="explain">'+esc(m.explanation||'')+'</div><div class="muted mini">'+esc(m.judge_reason||m.error||'')+'</div></div>'
+}
+function renderCases(){
+ var q=($('search').value||'').toLowerCase(),f=$('filter').value;
+ var list=rows.filter(function(r){return (f==='all'||r.outcome===f)&&((r.id||'').toLowerCase().indexOf(q)>=0||(r.sql||'').toLowerCase().indexOf(q)>=0)}).slice(0,200);
+ if(!list.length){$('cases').innerHTML='<div class="empty">No matching cases.</div>';return}
+ $('cases').innerHTML=list.map(function(r){
+  return '<details class="case"><summary><b>'+esc(r.id)+'</b> · <span class="'+(r.outcome==='both_correct'?'good':r.outcome==='both_wrong'?'bad':'warn')+'">'+esc(r.outcome||'—')+'</span> · <span class="muted">'+esc((r.categories||[]).join(', ')||'basic SELECT')+'</span></summary>'+
+  '<div class="case-body"><div class="sql">'+esc(r.sql||'')+'</div><div class="two" style="margin-top:10px">'+panel('A',r.model_a,r.model_a_name||'A','a')+panel('B',r.model_b,r.model_b_name||'B','b')+'</div></div></details>'
+ }).join('')
+}
 loadRuns();
 </script>
-</body></html>
+</body>
+</html>

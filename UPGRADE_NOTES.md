@@ -1,26 +1,37 @@
-# Two-Model Benchmark Upgrade
+# Benchmark v3 Upgrade
 
-## Added
-- `harness/compare.py`: configurable two-model Ollama benchmark.
-- `harness/sql_features.py`: deterministic SQL operation/category detection.
-- Structured judge dimensions: correctness, completeness, hallucination-free, clarity.
-- Side-by-side JSONL records with pair outcomes and disagreement flags.
-- Category analysis for JOIN, WHERE, GROUP BY, HAVING, ORDER BY, aggregation, subquery, LIMIT, DISTINCT.
-- Generation latency and token comparison.
-- Prompt SHA-256 hashes and identical generation settings stored for reproducibility.
-- New comparison dashboard.
-- Regression tests for SQL feature detection and pair outcomes.
+## Benchmark fairness
 
-## Evaluation fixes
-- Judge now receives the database schema.
-- Judge receives a deterministic inventory of operations present in the SQL.
-- Judge prompt explicitly forbids demanding absent operations.
-- Overall pass is derived from all four judge dimensions, so an internally inconsistent judge `grade` cannot silently alter the benchmark result.
-- Reports use `judge pass rate`, not `accuracy`, unless results are externally validated against human/golden labels.
+- Explicit Model A, Model B and shared judge CLI parameters.
+- Same SQL, schema, prompt and generation settings for both generators.
+- Explicit temperature, seed, context size, top-p, top-k, repeat penalty and output limit.
+- Warmup before measured generation.
+- Alternating A-first and B-first order.
+- Default single worker for clean latency comparison.
+- Per-run benchmark fairness hash and per-query case hash.
 
-## Fairness controls
-- Same query, schema, prompt and generation settings for both models.
-- Same judge model and judge prompt for both outputs.
-- Same seed and temperature.
-- Default one worker to avoid GPU contention skewing latency.
-- A/B generation order alternates across items to reduce systematic first/second effects.
+## Evaluation quality
+
+- Judge receives schema + SQL + actual operation inventory.
+- Judge explicitly cannot demand absent SQL operations.
+- Detector now covers window functions, CTEs, set operations, CASE, EXISTS, IN, BETWEEN, LIKE and NULL filtering.
+- Comments and quoted literals/identifiers are masked before feature detection.
+- Overall pass is derived from correctness + completeness + hallucination-free + clarity.
+- Judge grade consistency is retained as an audit field.
+- Infrastructure/model errors are separated from wrong answers.
+
+## Comparison quality
+
+- Paired bootstrap confidence interval for B minus A.
+- Exact McNemar test on discordant pairs.
+- Category-level comparison.
+- Optional external human/golden label agreement.
+- Explicit terminology: judge pass rate is not true accuracy without external validation.
+
+## Dashboard and reporting
+
+- Side-by-side A/B cards and dimensions.
+- Pair outcomes and category performance.
+- Search/filter per-query cases.
+- Side-by-side explanations and judge reasons.
+- PDF export endpoint and standalone PDF report.
