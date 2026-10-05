@@ -1,7 +1,9 @@
-import time
-import logging
+from __future__ import annotations
 
-import ollama
+import logging
+import time
+from typing import Any
+
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -12,57 +14,67 @@ def call_json(
     system: str,
     user: str,
     schema: type[BaseModel],
-    temperature: float = 0,
-    seed: int | None = None,
+    *,
+    temperature: float = 0.0,
+    seed: int | None = 42,
+    num_predict: int = 3000,
+    num_ctx: int = 8192,
+    top_p: float = 1.0,
+    top_k: int = 0,
+    repeat_penalty: float = 1.0,
     max_retries: int = 3,
-) -> tuple[BaseModel, dict]:
-    """
-    Call an Ollama model and parse structured JSON output.
+    ollama_host: str | None = None,
+    keep_alive: str | int = "10m",
+) -> tuple[BaseModel, dict[str, Any]]:
+    """Call Ollama and return parsed structured output plus reproducibility metrics."""
+    try:
+        import ollama
+    except ImportError as exc:
+        raise RuntimeError("The 'ollama' package is required. Run: python -m pip install -r requirements.txt") from exc
 
-    Returns a (parsed_model, metrics) tuple where metrics contains
-    latency, usd (always 0.0 for local), in_tok, out_tok.
-    Retries up to max_retries times with exponential backoff.
-    """
-    t = time.time()
+    client = ollama.Client(host=ollama_host) if ollama_host else ollama
+    options = {
+        "temperature": temperature,
+        "seed": seed,
+        "num_predict": num_predict,
+        "num_ctx": num_ctx,
+        "top_p": top_p,
+        "top_k": top_k,
+        "repeat_penalty": repeat_penalty,
+    }
+    started = time.perf_counter()
     last_error: Exception | None = None
 
-    opts: dict = {"temperature": temperature, "num_predict": 3000}
-    if seed is not None:
-        opts["seed"] = seed
-
-    for attempt in range(max_retries):
+    for attempt in range(1, max_retries + 1):
         try:
-            r = ollama.chat(
+            response = client.chat(
                 model=model,
                 messages=[
                     {"role": "system", "content": system},
                     {"role": "user", "content": user},
                 ],
                 format=schema.model_json_schema(),
-                options=opts,
+                options=options,
+                keep_alive=keep_alive,
             )
-            parsed = schema.model_validate_json(r.message.content)
-            metrics = {
-                "latency": round(time.time() - t, 2),
+            parsed = schema.model_validate_json(response.message.content)
+            latency = time.perf_counter() - started
+            in_tok = int(response.prompt_eval_count or 0)
+            out_tok = int(response.eval_count or 0)
+            return parsed, {
+                "latency_s": round(latency, 4),
+                "latency": round(latency, 2),
+                "in_tok": in_tok,
+                "out_tok": out_tok,
+                "tok_per_s": round(out_tok / latency, 2) if latency > 0 else 0.0,
+                "attempts": attempt,
                 "usd": 0.0,
-                "in_tok": r.prompt_eval_count or 0,
-                "out_tok": r.eval_count or 0,
             }
-            return parsed, metrics
-        except Exception as error:
-            last_error = error
-            if attempt < max_retries - 1:
-                backoff = 2 ** attempt
-                logger.warning(
-                    "Attempt %d/%d failed for model %s: %s — retrying in %ds",
-                    attempt + 1,
-                    max_retries,
-                    model,
-                    error,
-                    backoff,
-                )
-                time.sleep(backoff)
+        except Exception as exc:
+            last_error = exc
+            if attempt < max_retries:
+                delay = 2 ** (attempt - 1)
+                logger.warning("%s attempt %d/%d failed: %s; retrying in %ss", model, attempt, max_retries, exc, delay)
+                time.sleep(delay)
 
-    raise RuntimeError(
-        f"{model} failed to return valid {schema.__name__} JSON after {max_retries} tries"
-    ) from last_error
+    raise RuntimeError(f"{model} failed to return valid {schema.__name__} JSON after {max_retries} attempts") from last_error

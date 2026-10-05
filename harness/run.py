@@ -21,6 +21,7 @@ from tqdm import tqdm
 
 from llm import call_json
 from schema import Explanation, Verdict
+from sql_features import operation_inventory
 
 logging.basicConfig(
     level=logging.INFO,
@@ -118,14 +119,19 @@ def process_item(item: dict) -> dict:
         v, m2 = call_json(
             JUDGE_MODEL,
             JUDGE,
-            f"SQL:\n{item['sql']}\nExplanation:\n{out.explanation}",
+            f"Schema:\n{item['schema']}\n\nSQL:\n{item['sql']}\n\nOperations actually present:\n{operation_inventory(item['sql'])}\n\nExplanation to evaluate:\n{out.explanation}",
             Verdict,
         )
+        dims = {"correctness": v.correctness, "completeness": v.completeness, "hallucination_free": v.hallucination_free, "clarity": v.clarity}
+        score = int(all(dims.values()))
         return {
             "id": item["id"],
             "input": item["sql"],
             "output": out.explanation,
-            "score": int(v.grade == "good"),
+            "score": score,
+            "dimensions": dims,
+            "judge_reported_grade": v.grade,
+            "judge_grade_consistent": (v.grade == "good") == bool(score),
             "reason": v.reason,
             "sys_cost": m1,
             "judge_cost": m2,
@@ -165,7 +171,7 @@ with open(out_path, "a", encoding="utf-8") as out_file:
                 pbar.update(1)
 
 # ---------------------------------------------------------------------------
-# Summary & PDF Report
+# Summary
 # ---------------------------------------------------------------------------
 scored = [r for r in all_rows if r["error"] is None]
 errors = [r for r in all_rows if r["error"] is not None]
@@ -182,16 +188,14 @@ logger.info(
     len(errors),
 )
 
-# Generate PDF report
-if not getattr(args, "no_pdf", False):
+if not args.no_pdf:
     try:
         from export_pdf import generate_pdf_report
         pdf_out = out_path.parent / f"{out_path.stem}_report.pdf"
         generate_pdf_report(out_path, pdf_out, data_dir=pathlib.Path("data"))
-        logger.info("PDF Report generated: %s", pdf_out)
-    except Exception as e:
-        logger.warning("Could not auto-generate PDF report: %s", e)
-
+        logger.info("PDF report generated: %s", pdf_out)
+    except Exception as exc:
+        logger.warning("Could not auto-generate PDF report: %s", exc)
 if errors:
     logger.warning("Failed items: %s", [e["id"] for e in errors])
     sys.exit(1)

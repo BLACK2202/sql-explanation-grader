@@ -1,580 +1,98 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SQL Explanation Grader — Live Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:        #0b0f1a;
-      --surface:   #111827;
-      --surface2:  #1a2235;
-      --border:    #1f2d45;
-      --accent:    #3b82f6;
-      --accent2:   #6366f1;
-      --good:      #10b981;
-      --bad:       #ef4444;
-      --warn:      #f59e0b;
-      --text:      #e2e8f0;
-      --muted:     #64748b;
-      --mono:      'JetBrains Mono', monospace;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 24px;
-    }
-
-    /* ── Header ── */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 32px;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-    .header-left h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #60a5fa, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -0.02em;
-    }
-    .header-left p { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
-
-    .run-selector { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .run-selector select {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-family: var(--mono);
-      cursor: pointer;
-      outline: none;
-    }
-    .run-selector select:focus { border-color: var(--accent); }
-
-    .pulse-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: var(--good);
-      animation: pulse 1.5s infinite;
-      flex-shrink: 0;
-    }
-    .pulse-dot.idle { background: var(--muted); animation: none; }
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,.6); }
-      50%       { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
-    }
-
-    /* ── Stat cards ── */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 14px;
-      margin-bottom: 24px;
-    }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
-      transition: transform .2s, border-color .2s;
-    }
-    .card:hover { transform: translateY(-2px); border-color: var(--accent); }
-    .card::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: var(--glow, transparent);
-      opacity: .06;
-      pointer-events: none;
-    }
-    .card.good  { --glow: var(--good); }
-    .card.bad   { --glow: var(--bad); }
-    .card.blue  { --glow: var(--accent); }
-    .card.warn  { --glow: var(--warn); }
-
-    .card-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
-    .card-value { font-size: 2rem; font-weight: 700; line-height: 1; }
-    .card-sub   { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
-    .card.good .card-value { color: var(--good); }
-    .card.bad  .card-value { color: var(--bad); }
-    .card.blue .card-value { color: #60a5fa; }
-    .card.warn .card-value { color: var(--warn); }
-
-    /* ── Progress bar ── */
-    .progress-section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px 24px;
-      margin-bottom: 24px;
-    }
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 12px;
-    }
-    .progress-header span { font-size: 0.85rem; color: var(--muted); }
-    .progress-header strong { font-size: 1rem; font-weight: 600; }
-
-    .progress-track {
-      width: 100%;
-      height: 10px;
-      background: var(--surface2);
-      border-radius: 99px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      border-radius: 99px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      transition: width .6s cubic-bezier(.4,0,.2,1);
-    }
-
-    .progress-segments {
-      display: flex;
-      gap: 4px;
-      margin-top: 10px;
-    }
-    .seg {
-      flex: 1;
-      height: 4px;
-      border-radius: 99px;
-      background: var(--surface2);
-      transition: background .4s;
-    }
-    .seg.good { background: var(--good); }
-    .seg.bad  { background: var(--bad); }
-    .seg.err  { background: var(--warn); }
-
-    /* ── Accuracy ring ── */
-    .lower-grid {
-      display: grid;
-      grid-template-columns: 220px 1fr;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    @media (max-width: 700px) { .lower-grid { grid-template-columns: 1fr; } }
-
-    .ring-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
-    .ring-card h3 { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-
-    .ring-wrap { position: relative; width: 140px; height: 140px; }
-    .ring-wrap svg { width: 140px; height: 140px; transform: rotate(-90deg); }
-    .ring-bg { stroke: var(--surface2); }
-    .ring-fill {
-      stroke: url(#ringGrad);
-      stroke-linecap: round;
-      transition: stroke-dashoffset .8s cubic-bezier(.4,0,.2,1);
-    }
-    .ring-label {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .ring-pct  { font-size: 1.9rem; font-weight: 700; color: var(--text); }
-    .ring-sub  { font-size: .7rem; color: var(--muted); margin-top: 2px; }
-
-    /* ── Feed ── */
-    .feed-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      overflow: hidden;
-    }
-    .feed-card h3 { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 14px; }
-
-    .feed { display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto; }
-    .feed::-webkit-scrollbar { width: 4px; }
-    .feed::-webkit-scrollbar-track { background: transparent; }
-    .feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-
-    .feed-item {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 10px;
-      align-items: start;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      animation: slideIn .25s ease;
-    }
-    @keyframes slideIn { from { opacity:0; transform: translateY(-6px); } to { opacity:1; transform: none; } }
-
-    .feed-badge {
-      font-size: .7rem;
-      font-family: var(--mono);
-      font-weight: 500;
-      padding: 3px 8px;
-      border-radius: 6px;
-      margin-top: 1px;
-      white-space: nowrap;
-    }
-    .feed-badge.good { background: rgba(16,185,129,.15); color: var(--good); }
-    .feed-badge.bad  { background: rgba(239,68,68,.15);  color: var(--bad); }
-    .feed-badge.err  { background: rgba(245,158,11,.15); color: var(--warn); }
-
-    .feed-body {}
-    .feed-id   { font-size: .7rem; font-family: var(--mono); color: var(--muted); margin-bottom: 3px; }
-    .feed-sql  { font-size: .78rem; font-family: var(--mono); color: #93c5fd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-    .feed-reason { font-size: .78rem; color: var(--muted); margin-top: 3px; line-height: 1.4; }
-
-    .feed-latency { font-size: .72rem; font-family: var(--mono); color: var(--muted); white-space: nowrap; }
-
-    /* ── Empty state ── */
-    .empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 48px 24px;
-      color: var(--muted);
-      font-size: .9rem;
-    }
-    .empty svg { opacity: .3; }
-
-    /* ── ETA chip ── */
-    .eta-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: .78rem;
-      color: var(--muted);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 99px;
-      padding: 4px 12px;
-    }
-
-    /* ── PDF Export Button ── */
-    .pdf-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: .78rem;
-      font-weight: 600;
-      color: #fff;
-      background: linear-gradient(135deg, #4f46e5, #6366f1);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px;
-      padding: 7px 14px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
-    }
-    .pdf-btn:hover {
-      background: linear-gradient(135deg, #4338ca, #4f46e5);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
-    }
-    .pdf-btn:active {
-      transform: translateY(0);
-    }
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SQL Explanation Grader — A/B</title>
+<style>
+:root{--bg:#080d18;--panel:#111827;--panel2:#172033;--line:#26334b;--text:#e5edf8;--muted:#8fa0b8;--a:#60a5fa;--b:#a78bfa;--good:#34d399;--bad:#fb7185;--warn:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#16213a 0,#080d18 42%);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;padding:28px}
+.wrap{max-width:1500px;margin:auto}.head{display:flex;gap:16px;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px}.title{font-size:28px;font-weight:800}.sub{color:var(--muted);max-width:900px}.controls{display:flex;gap:8px;flex-wrap:wrap}select,input,button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 11px}button{cursor:pointer}.notice{background:#241d0b;border:1px solid #6a5418;color:#f9d77d;border-radius:10px;padding:10px 12px;margin:12px 0}.grid{display:grid;grid-template-columns:repeat(6,minmax(140px,1fr));gap:12px}.card,.panel,.case{background:rgba(17,24,39,.94);border:1px solid var(--line);border-radius:14px;padding:16px}.label{text-transform:uppercase;font-size:10px;letter-spacing:.09em;color:var(--muted)}.value{font-size:25px;font-weight:800;margin-top:4px}.a{color:var(--a)}.b{color:var(--b)}.good{color:var(--good)}.bad{color:var(--bad)}.warn{color:var(--warn)}.muted{color:var(--muted)}.section{margin-top:18px}.section h2{font-size:16px;margin:0 0 10px}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.table th{color:var(--muted);font-size:11px;text-transform:uppercase}.sql,.explain{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#0b1220;border:1px solid var(--line);padding:10px;border-radius:9px;white-space:pre-wrap;overflow:auto}.explain{font-family:inherit;min-height:80px}.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.chip{border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:11px}.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:8px 0}.metric{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px;font-size:12px}.case{padding:0;overflow:hidden;margin-top:9px}.case summary{cursor:pointer;padding:13px;list-style:none}.case summary::-webkit-details-marker{display:none}.case-body{padding:0 13px 15px}.empty{text-align:center;color:var(--muted);padding:30px}.mini{font-size:12px}@media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){body{padding:14px}.grid,.two{grid-template-columns:1fr}.metric-grid{grid-template-columns:1fr}}
+</style>
 </head>
-<body>
-
-<div class="header">
-  <div class="header-left">
-    <h1>SQL Explanation Grader</h1>
-    <p>Live evaluation dashboard — auto-refreshes every 5 seconds</p>
-  </div>
-  <div class="run-selector">
-    <div class="pulse-dot idle" id="liveDot"></div>
-    <select id="runSelect" onchange="onRunChange()">
-      <option value="">Loading runs…</option>
-    </select>
-    <select id="splitSelect" onchange="refresh()">
-      <option value="dev">dev</option>
-      <option value="test">test</option>
-      <option value="tiny">tiny</option>
-      <option value="all">all</option>
-    </select>
-    <span class="eta-chip" id="etaChip">⏱ —</span>
-    <button class="pdf-btn" onclick="exportPdf()" title="Download PDF Report for selected run">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-      Export PDF
-    </button>
-  </div>
+<body><div class="wrap">
+<div class="head"><div><div class="title">SQL Explanation Grader — <span class="a">Model A</span> vs <span class="b">Model B</span></div><div class="sub">Same SQL, schema, prompt and generation settings. Same judge. <b>Judge pass rate is not true accuracy</b> unless externally validated against human/golden labels.</div></div><div class="controls"><select id="run"></select><button id="pdf">Export PDF</button></div></div>
+<div id="notice"></div>
+<div id="cards" class="grid"></div>
+<div class="section two"><div class="panel"><h2>Dimension comparison</h2><div id="dims"></div></div><div class="panel"><h2>Pair outcomes</h2><div id="pairs"></div></div></div>
+<div class="section panel"><h2>Performance by SQL category</h2><div id="cats"></div></div>
+<div class="section panel"><div class="controls" style="justify-content:space-between"><h2>Per-query comparison</h2><span><input id="search" placeholder="Search id or SQL"><select id="filter"><option value="all">All outcomes</option><option value="both_correct">Both correct</option><option value="only_a_correct">Only A correct</option><option value="only_b_correct">Only B correct</option><option value="both_wrong">Both wrong</option><option value="evaluation_error">Evaluation error</option></select></span></div><div id="cases"></div></div>
 </div>
-
-<!-- Stat cards -->
-<div class="stats-grid">
-  <div class="card blue">
-    <div class="card-label">Progress</div>
-    <div class="card-value" id="statDone">—</div>
-    <div class="card-sub" id="statTotal">of — items</div>
-  </div>
-  <div class="card good">
-    <div class="card-label">Good</div>
-    <div class="card-value" id="statGood">—</div>
-    <div class="card-sub" id="statGoodPct">—%</div>
-  </div>
-  <div class="card bad">
-    <div class="card-label">Bad</div>
-    <div class="card-value" id="statBad">—</div>
-    <div class="card-sub" id="statBadPct">—%</div>
-  </div>
-  <div class="card warn">
-    <div class="card-label">Errors</div>
-    <div class="card-value" id="statErr">—</div>
-    <div class="card-sub">failed items</div>
-  </div>
-  <div class="card blue">
-    <div class="card-label">Avg Latency</div>
-    <div class="card-value" id="statLat">—</div>
-    <div class="card-sub">seconds / item</div>
-  </div>
-</div>
-
-<!-- Progress bar -->
-<div class="progress-section">
-  <div class="progress-header">
-    <strong id="progressLabel">Waiting for results…</strong>
-    <span id="progressPct">0%</span>
-  </div>
-  <div class="progress-track">
-    <div class="progress-fill" id="progressFill" style="width:0%"></div>
-  </div>
-  <div class="progress-segments" id="segments"></div>
-</div>
-
-<!-- Ring + Feed -->
-<div class="lower-grid">
-  <div class="ring-card">
-    <h3>Accuracy</h3>
-    <div class="ring-wrap">
-      <svg viewBox="0 0 140 140">
-        <defs>
-          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%"   stop-color="#3b82f6"/>
-            <stop offset="100%" stop-color="#a78bfa"/>
-          </linearGradient>
-        </defs>
-        <circle class="ring-bg"   cx="70" cy="70" r="58" fill="none" stroke-width="12"/>
-        <circle class="ring-fill" cx="70" cy="70" r="58" fill="none" stroke-width="12"
-          id="ringCircle"
-          stroke-dasharray="364.4"
-          stroke-dashoffset="364.4"/>
-      </svg>
-      <div class="ring-label">
-        <span class="ring-pct" id="ringPct">—%</span>
-        <span class="ring-sub">good</span>
-      </div>
-    </div>
-    <div style="font-size:.78rem;color:var(--muted);text-align:center" id="ringBaseline">
-      Baseline: 30.0%
-    </div>
-  </div>
-
-  <div class="feed-card">
-    <h3>Live feed — latest items</h3>
-    <div class="feed" id="feed">
-      <div class="empty">
-        <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        No results yet — run is starting…
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-  const CIRCUMFERENCE = 2 * Math.PI * 58; // 364.4
-  let lastDone = 0;
-  let startTime = null;
-  let pollInterval = null;
-
-  function getSelection() {
-    const r = document.getElementById('runSelect').value;
-    const s = document.getElementById('splitSelect').value;
-    return { run_id: r, split: s };
-  }
-
-  async function loadRuns() {
-    try {
-      const res = await fetch('/api/runs');
-      const runs = await res.json();
-      const sel = document.getElementById('runSelect');
-      sel.innerHTML = runs.length
-        ? runs.map(r => `<option value="${r.run_id}" data-split="${r.split}">${r.run_id} / ${r.split}</option>`).join('')
-        : '<option value="">No runs found</option>';
-      if (runs.length) {
-        // Default to the most recent
-        sel.selectedIndex = runs.length - 1;
-        const last = runs[runs.length - 1];
-        document.getElementById('splitSelect').value = last.split;
-      }
-    } catch(e) { console.warn('Could not load runs', e); }
-  }
-
-  function onRunChange() {
-    const sel = document.getElementById('runSelect');
-    const opt = sel.options[sel.selectedIndex];
-    if (opt && opt.dataset.split) {
-      document.getElementById('splitSelect').value = opt.dataset.split;
-    }
-    refresh();
-  }
-
-  async function refresh() {
-    const { run_id, split } = getSelection();
-    if (!run_id) return;
-    try {
-      const res = await fetch(`/api/status?run_id=${encodeURIComponent(run_id)}&split=${encodeURIComponent(split)}`);
-      const d = await res.json();
-      render(d);
-    } catch(e) { console.warn('Fetch error', e); }
-  }
-
-  function render(d) {
-    const isLive = d.exists && d.done < d.total;
-    const dot = document.getElementById('liveDot');
-    dot.className = 'pulse-dot' + (isLive ? '' : ' idle');
-
-    // Cards
-    set('statDone', d.done);
-    set('statTotal', `of ${d.total} items`);
-    set('statGood', d.good);
-    set('statBad',  d.bad);
-    set('statErr',  d.errors);
-
-    const scored = d.good + d.bad;
-    set('statGoodPct', scored ? (100*d.good/scored).toFixed(1)+'%' : '—%');
-    set('statBadPct',  scored ? (100*d.bad/scored).toFixed(1)+'%'  : '—%');
-    set('statLat', d.avg_latency ? d.avg_latency + 's' : '—');
-
-    // Progress bar
-    const fillPct = d.total > 0 ? (d.done / d.total * 100).toFixed(1) : 0;
-    document.getElementById('progressFill').style.width = fillPct + '%';
-    set('progressPct', fillPct + '%');
-    set('progressLabel', d.exists
-      ? (d.done >= d.total ? `✓ Complete — ${d.done}/${d.total} items` : `Running — ${d.done} / ${d.total} items`)
-      : 'Waiting for results file…');
-
-    // Segments
-    const segs = document.getElementById('segments');
-    if (d.total > 0 && d.rows && d.rows.length > 0) {
-      // Build a flat status map from rows (newest-first, so reverse)
-      const allRows = [...d.rows].reverse();
-      const n = Math.min(d.total, 80);
-      let html = '';
-      for (let i = 0; i < n; i++) {
-        const r = allRows[i];
-        if (!r) { html += '<div class="seg"></div>'; continue; }
-        const cls = r.error ? 'err' : r.score ? 'good' : 'bad';
-        html += `<div class="seg ${cls}" title="${r.id}: ${cls}"></div>`;
-      }
-      segs.innerHTML = html;
-    }
-
-    // ETA
-    if (isLive && d.avg_latency && d.done > 0) {
-      const remaining = d.total - d.done;
-      // rough estimate: remaining items / workers * avg_latency (assume 4 workers)
-      const etaSec = Math.round(remaining * d.avg_latency / 4);
-      const etaMin = Math.floor(etaSec / 60);
-      const etaSec2 = etaSec % 60;
-      set('etaChip', `⏱ ~${etaMin}m ${etaSec2}s left`);
-    } else if (!isLive && d.done > 0) {
-      set('etaChip', '✓ Done');
-    } else {
-      set('etaChip', '⏱ —');
-    }
-
-    // Ring
-    const pct = d.pct || 0;
-    const offset = CIRCUMFERENCE * (1 - pct / 100);
-    document.getElementById('ringCircle').style.strokeDashoffset = offset;
-    set('ringPct', pct.toFixed(1) + '%');
-
-    const delta = pct - 30.0;
-    const sign = delta >= 0 ? '+' : '';
-    set('ringBaseline', `Baseline: 30.0% (${sign}${delta.toFixed(1)}%)`);
-    document.getElementById('ringBaseline').style.color = delta >= 0 ? 'var(--good)' : 'var(--bad)';
-
-    // Feed
-    renderFeed(d.rows || []);
-  }
-
-  function renderFeed(rows) {
-    const feed = document.getElementById('feed');
-    if (!rows.length) {
-      feed.innerHTML = `<div class="empty">
-        <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        No results yet — run is starting…
-      </div>`;
-      return;
-    }
-
-    feed.innerHTML = rows.map(r => {
-      const cls   = r.error ? 'err' : r.score ? 'good' : 'bad';
-      const label = r.error ? 'ERROR' : r.score ? 'GOOD' : 'BAD';
-      const sql   = (r.input || '').replace(/</g,'&lt;').slice(0, 120);
-      const reason = r.error
-        ? `<span style="color:var(--warn)">${esc(r.error).slice(0,120)}</span>`
-        : esc((r.reason || '').slice(0, 140));
-      const lat = r.sys_cost && r.judge_cost
-        ? (r.sys_cost.latency + r.judge_cost.latency).toFixed(1) + 's'
-        : '—';
-      return `
-        <div class="feed-item">
-          <span class="feed-badge ${cls}">${label}</span>
-          <div class="feed-body">
-            <div class="feed-id">${r.id}</div>
-            <div class="feed-sql">${sql}</div>
-            <div class="feed-reason">${reason}</div>
-          </div>
-          <span class="feed-latency">${lat}</span>
-        </div>`;
-    }).join('');
-  }
-
-  function set(id, val) { document.getElementById(id).textContent = val; }
-  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  function exportPdf() {
-    const runId = document.getElementById('runSelect').value || 'v2';
-    const split = document.getElementById('splitSelect').value || 'dev';
-    window.open(`/api/export-pdf?run_id=${encodeURIComponent(runId)}&split=${encodeURIComponent(split)}`, '_blank');
-  }
-
-  // Init
-  (async () => {
-    await loadRuns();
-    await refresh();
-    pollInterval = setInterval(refresh, 5000);
-  })();
+var rows=[];
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function pct(n,d){return d?(100*n/d).toFixed(1)+'%':'—'}
+function avg(a){return a.length?(a.reduce(function(x,y){return x+y},0)/a.length).toFixed(2):'—'}
+function valid(){return rows.filter(function(r){return !r.error&&r.model_a&&r.model_b&&r.model_a.score!=null&&r.model_b.score!=null})}
+function loadRuns(){
+ fetch('/api/runs').then(function(r){return r.json()}).then(function(runs){
+  $('run').innerHTML=runs.map(function(x){return '<option value="'+esc(x)+'">'+esc(x)+'</option>'}).join('');
+  $('run').onchange=load;
+  $('search').oninput=renderCases;
+  $('filter').onchange=renderCases;
+  $('pdf').onclick=function(){if($('run').value)window.location='/api/export-pdf/'+encodeURIComponent($('run').value)};
+  if(runs.length)load();else $('notice').innerHTML='<div class="notice">No result JSONL files found in results/.</div>';
+ })
+}
+function load(){
+ fetch('/api/results/'+encodeURIComponent($('run').value)).then(function(r){return r.json()}).then(function(data){rows=data;render()})
+}
+function render(){
+ var v=valid(),n=v.length,a=v.filter(function(r){return r.model_a.score}).length,b=v.filter(function(r){return r.model_b.score}).length,dis=v.filter(function(r){return r.disagreement}).length,err=rows.length-n;
+ var al=v.map(function(r){return r.model_a.generation_cost&&r.model_a.generation_cost.latency_s}).filter(function(x){return x!=null});
+ var bl=v.map(function(r){return r.model_b.generation_cost&&r.model_b.generation_cost.latency_s}).filter(function(x){return x!=null});
+ var at=v.map(function(r){return r.model_a.generation_cost&&r.model_a.generation_cost.tok_per_s}).filter(function(x){return x!=null});
+ var bt=v.map(function(r){return r.model_b.generation_cost&&r.model_b.generation_cost.tok_per_s}).filter(function(x){return x!=null});
+ var an=rows[0]&&rows[0].model_a_name||'Model A',bn=rows[0]&&rows[0].model_b_name||'Model B';
+ $('notice').innerHTML='<div class="notice">Pass percentages are judge pass rates. Raw token counts use each model tokenizer and are not perfectly equivalent across architectures.'+(err?' <b>'+err+'</b> evaluation-error row(s) are excluded from pass-rate statistics.':'')+'</div>';
+ $('cards').innerHTML=
+  '<div class="card"><div class="label">'+esc(an)+' pass</div><div class="value a">'+pct(a,n)+'</div><div class="muted">'+a+'/'+n+'</div></div>'+
+  '<div class="card"><div class="label">'+esc(bn)+' pass</div><div class="value b">'+pct(b,n)+'</div><div class="muted">'+b+'/'+n+'</div></div>'+
+  '<div class="card"><div class="label">B − A</div><div class="value">'+(n?((100*(b-a)/n>=0?'+':'')+(100*(b-a)/n).toFixed(1)+' pp'):'—')+'</div><div class="muted">paired pass difference</div></div>'+
+  '<div class="card"><div class="label">Disagreements</div><div class="value warn">'+dis+'</div><div class="muted">'+pct(dis,n)+' of valid</div></div>'+
+  '<div class="card"><div class="label">Latency avg</div><div class="value">'+avg(al)+' / '+avg(bl)+'s</div><div class="muted">A / B</div></div>'+
+  '<div class="card"><div class="label">Output tok/s</div><div class="value">'+avg(at)+' / '+avg(bt)+'</div><div class="muted">A / B</div></div>';
+ renderDims(v,n,an,bn);renderPairs(v,n);renderCats(v,an,bn);renderCases();
+ var hashes={};rows.forEach(function(r){if(r.benchmark_fairness_sha256)hashes[r.benchmark_fairness_sha256]=1});
+ if(Object.keys(hashes).length>1)$('notice').innerHTML+='<div class="notice">WARNING: multiple benchmark fairness hashes are present. Do not pool these rows as one fair comparison.</div>';
+}
+function renderDims(v,n,an,bn){
+ var ds=['correctness','completeness','hallucination_free','clarity'];
+ $('dims').innerHTML='<table class="table"><tr><th>Dimension</th><th>'+esc(an)+'</th><th>'+esc(bn)+'</th></tr>'+
+ ds.map(function(d){return '<tr><td>'+d.replace('_',' ')+'</td><td class="a">'+pct(v.filter(function(r){return r.model_a.dimensions&&r.model_a.dimensions[d]}).length,n)+'</td><td class="b">'+pct(v.filter(function(r){return r.model_b.dimensions&&r.model_b.dimensions[d]}).length,n)+'</td></tr>'}).join('')+'</table>'
+}
+function renderPairs(v,n){
+ var keys=['both_correct','only_a_correct','only_b_correct','both_wrong','evaluation_error'];
+ $('pairs').innerHTML='<table class="table"><tr><th>Outcome</th><th>Count</th><th>Share</th></tr>'+
+ keys.map(function(k){var c=v.filter(function(r){return r.outcome===k}).length;return '<tr><td>'+k+'</td><td>'+c+'</td><td>'+pct(c,n)+'</td></tr>'}).join('')+'</table>'
+}
+function renderCats(v,an,bn){
+ var cats={};v.forEach(function(r){(r.categories||[]).forEach(function(c){(cats[c]||(cats[c]=[])).push(r)})});
+ var order=['JOIN','WHERE','GROUP BY','HAVING','ORDER BY','aggregation','window','subquery','CTE','UNION','INTERSECT','EXCEPT','LIMIT','OFFSET','DISTINCT','CASE','EXISTS','IN','BETWEEN','LIKE','NULL filter'];
+ var used=order.filter(function(c){return cats[c]});
+ $('cats').innerHTML='<table class="table"><tr><th>Category</th><th>N</th><th>'+esc(an)+'</th><th>'+esc(bn)+'</th><th>Disagree</th></tr>'+
+ used.map(function(c){var q=cats[c],aa=q.filter(function(r){return r.model_a.score}).length,bb=q.filter(function(r){return r.model_b.score}).length,dd=q.filter(function(r){return r.disagreement}).length;return '<tr><td>'+esc(c)+'</td><td>'+q.length+'</td><td class="a">'+pct(aa,q.length)+'</td><td class="b">'+pct(bb,q.length)+'</td><td>'+pct(dd,q.length)+'</td></tr>'}).join('')+'</table>'
+}
+function dims(m){
+ return ['correctness','completeness','hallucination_free','clarity'].map(function(d){var ok=m&&m.dimensions&&m.dimensions[d];return '<span class="chip '+(ok?'good':'bad')+'">'+d.replace('_',' ')+': '+(ok?'✓':'✗')+'</span>'}).join('')
+}
+function panel(label,m,name,cls){
+ if(!m)return '<div class="metric"><b>'+label+'</b><div class="bad">No result</div></div>';
+ var gc=m.generation_cost||{};
+ return '<div><h3 class="'+cls+'">'+label+' — '+esc(name)+' <span class="'+(m.score?'good':'bad')+'">'+(m.score?'PASS':'FAIL')+'</span></h3>'+
+ '<div class="chips">'+dims(m)+'</div><div class="metric-grid"><div class="metric">Latency<br><b>'+(gc.latency_s==null?'—':gc.latency_s+'s')+'</b></div><div class="metric">Input tokens<br><b>'+(gc.in_tok==null?'—':gc.in_tok)+'</b></div><div class="metric">Output tokens<br><b>'+(gc.out_tok==null?'—':gc.out_tok)+'</b></div></div>'+
+ '<div class="explain">'+esc(m.explanation||'')+'</div><div class="muted mini">'+esc(m.judge_reason||m.error||'')+'</div></div>'
+}
+function renderCases(){
+ var q=($('search').value||'').toLowerCase(),f=$('filter').value;
+ var list=rows.filter(function(r){return (f==='all'||r.outcome===f)&&((r.id||'').toLowerCase().indexOf(q)>=0||(r.sql||'').toLowerCase().indexOf(q)>=0)}).slice(0,200);
+ if(!list.length){$('cases').innerHTML='<div class="empty">No matching cases.</div>';return}
+ $('cases').innerHTML=list.map(function(r){
+  return '<details class="case"><summary><b>'+esc(r.id)+'</b> · <span class="'+(r.outcome==='both_correct'?'good':r.outcome==='both_wrong'?'bad':'warn')+'">'+esc(r.outcome||'—')+'</span> · <span class="muted">'+esc((r.categories||[]).join(', ')||'basic SELECT')+'</span></summary>'+
+  '<div class="case-body"><div class="sql">'+esc(r.sql||'')+'</div><div class="two" style="margin-top:10px">'+panel('A',r.model_a,r.model_a_name||'A','a')+panel('B',r.model_b,r.model_b_name||'B','b')+'</div></div></details>'
+ }).join('')
+}
+loadRuns();
 </script>
 </body>
 </html>

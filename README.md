@@ -1,76 +1,227 @@
-# SQL Explanation Grader
+# SQL Explanation Grader — Fair Two-Model Benchmark
 
-This project generates or grades plain-language explanations of SQLite `SELECT` queries. It uses one local Ollama model to write an explanation and a second model to judge it against the labelling guide.
+A local Ollama benchmark for comparing two LLMs fairly on plain-language explanations of SQLite SELECT queries.
+
+Model A and Model B receive the same SQL query, schema/context, generator prompt, generation settings, seed and output limit. Both explanations are evaluated independently by the same judge model and exact same judge prompt.
+
+> Important: the benchmark reports **judge pass rate**, not “true accuracy”. Use the word accuracy only after validating the judge/output against human or trusted golden labels.
+
+## What is compared
+
+For every SQL query the benchmark records:
+
+- Model A and Model B explanations side by side
+- correctness
+- completeness
+- hallucination-free status
+- clarity
+- generation latency and output throughput
+- input/output token usage
+- both-correct / only-A / only-B / both-wrong outcomes
+- disagreement cases
+- SQL-category performance
+- prompt, case and benchmark-fairness hashes
+- A-first / B-first generation order
+- per-model errors without treating infrastructure failures as wrong answers
+
+## SQL categories
+
+The deterministic detector covers:
+
+JOIN, WHERE, GROUP BY, HAVING, ORDER BY, aggregation, window functions, subqueries, CTEs, UNION/INTERSECT/EXCEPT, LIMIT/OFFSET, DISTINCT, CASE, EXISTS, IN, BETWEEN, LIKE/GLOB/REGEXP and NULL filtering.
+
+Comments and quoted strings/identifiers are masked before matching, so a word such as JOIN inside a string does not create a fake JOIN requirement.
+
+## Why the judge was upgraded
+
+The judge receives:
+
+1. the database schema,
+2. the exact SQL,
+3. a deterministic inventory of operations actually present,
+4. the candidate explanation.
+
+The judge prompt explicitly says never penalize an explanation for an operation that is absent from the SQL.
+
+Completeness is therefore evaluated against the actual query rather than an imagined checklist.
+
+Overall pass is derived from four dimensions:
+
+- correctness
+- completeness
+- hallucination_free
+- clarity
+
+The judge’s grade field is retained as an audit field, but it cannot silently override the deterministic four-dimension score.
 
 ## Requirements
 
-- Python 3.10 or newer
+- Python 3.10+
 - Ollama running locally
-- At least one model pulled (e.g. `qwen2.5:7b` for generation, `qwen2.5:3b` for judging)
+- two generator models pulled
+- one judge model pulled
 
-Install Python dependencies:
+Install:
 
-```powershell
+~~~bash
 python -m pip install -r requirements.txt
-```
+~~~
 
-## Running
+Example:
 
-### Validate the dataset
+~~~bash
+ollama pull qwen2.5:7b
+ollama pull llama3.1:8b
+~~~
 
-```powershell
-python harness/validate.py
-```
+## Run a fair comparison
 
-### Smoke test (1 item)
+~~~bash
+python harness/compare.py tiny prompts/v2.md qwen_vs_llama \
+  --model-a qwen2.5:7b \
+  --model-b llama3.1:8b \
+  --judge-model qwen2.5:7b
+~~~
 
-```powershell
-python harness/run.py tiny prompts/v2.md smoke
-```
+Development split:
 
-### Development split
+~~~bash
+python harness/compare.py dev prompts/v2.md qwen_vs_llama \
+  --model-a qwen2.5:7b \
+  --model-b llama3.1:8b \
+  --judge-model qwen2.5:7b
+~~~
 
-```powershell
-python harness/run.py dev prompts/v2.md v2 --system-model qwen2.5:7b --judge-model qwen2.5:3b
-```
+Any Ollama model name can be supplied through the three model flags.
 
-### Test split
+### Fairness controls
 
-```powershell
-python harness/run.py test prompts/v2.md v2 --system-model qwen2.5:7b --judge-model qwen2.5:3b
-```
+Defaults are intentionally conservative:
 
-Results are written to `results/<run_id>_<split>.jsonl`. Each row contains the generated explanation, binary score, judge reason, latency, and token counts. Runs that crash mid-way automatically resume from where they left off.
+~~~text
+temperature=0
+seed=42
+num-predict=3000
+num-ctx=8192
+top-p=1
+top-k=0
+repeat-penalty=1
+workers=1
+warmup=true
+~~~
 
-## Options
+Both generators receive identical settings.
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--system-model` | `qwen2.5:7b` | Model used to generate explanations |
-| `--judge-model` | `qwen2.5:3b` | Model used to grade explanations |
-| `--workers` | `4` | Number of parallel threads |
-| `--judge-prompt` | `prompts/judge.md` | Path to the versioned judge system prompt |
+Both generators and the judge are warmed up before measured calls, reducing cold model-load bias in latency.
 
-## Prompts
+Generation order alternates A-first and B-first across dataset items.
 
-| File | Description |
-|------|-------------|
-| `prompts/v1.md` | Initial baseline prompt (30% accuracy) |
-| `prompts/v2.md` | Improved 10-step checklist prompt |
-| `prompts/judge.md` | Versioned judge system prompt |
+For clean latency comparisons, keep workers at 1. Parallel workers are available when throughput matters more than latency fairness.
 
-See `prompts/CHANGELOG.md` for the full prompt evolution history.
+Optional remote Ollama:
 
-## PDF Reports
+~~~bash
+python harness/compare.py dev prompts/v2.md run \
+  --model-a qwen2.5:7b \
+  --model-b llama3.1:8b \
+  --judge-model qwen2.5:7b \
+  --ollama-host http://127.0.0.1:11434
+~~~
 
-Generate publication-ready PDF evaluation reports with executive summaries, pass-rate gauges, feature breakdowns, and itemized critique:
+## Results
 
-```bash
-# Generate a PDF report for any results file
-python harness/export_pdf.py results/v2_dev.jsonl
+Results are written to:
 
-# Specify custom output destination
-python harness/export_pdf.py results/v2_dev.jsonl -o reports/v2_dev_summary.pdf
-```
+~~~text
+results/<run_id>_<split>.jsonl
+~~~
 
-You can also download PDF reports directly from the live dashboard (`http://localhost:7860`) by clicking the **"Export PDF"** button.
+The runner resumes interrupted work and compacts checkpoints to one canonical row per query.
+
+Infrastructure/model failures are stored as evaluation_error instead of being silently counted as wrong.
+
+Each row stores a case hash and a common benchmark-fairness hash. This makes accidental mixing of runs with different prompts/settings detectable.
+
+## Statistical analysis
+
+~~~bash
+python harness/analyze.py results/qwen_vs_llama_dev.jsonl
+~~~
+
+The analyzer reports:
+
+- judge pass rate
+- correctness, completeness, hallucination-free and clarity
+- average and median generation latency
+- input/output tokens and output tok/s
+- paired B-minus-A pass-rate difference
+- paired bootstrap 95% confidence interval
+- exact McNemar p-value on discordant pairs
+- both-correct / only-A / only-B / both-wrong counts
+- disagreement rate
+- performance by SQL category
+- disagreement cases and both judge reasons
+
+Token counts are useful resource metrics, but raw token units are tokenizer/model-specific and should not be treated as identical units across architectures.
+
+## Optional human/golden validation
+
+Create a JSONL file with:
+
+~~~json
+{"id":"q001","model_a_score":1,"model_b_score":0}
+{"id":"q002","model_a_score":1,"model_b_score":1}
+~~~
+
+Then run:
+
+~~~bash
+python harness/analyze.py results/qwen_vs_llama_dev.jsonl --gold gold_labels.jsonl
+~~~
+
+The result is reported as agreement with the supplied gold labels. The project still avoids calling an unvalidated judge pass rate true accuracy.
+
+A template is provided in gold_labels.example.jsonl.
+
+## Dashboard
+
+~~~bash
+python dashboard/server.py
+~~~
+
+Open http://localhost:7860.
+
+The upgraded dashboard provides:
+
+- A/B pass-rate cards
+- paired difference
+- disagreement count
+- latency and throughput
+- dimension-by-dimension comparison
+- pair-outcome table
+- SQL-category comparison
+- searchable/filterable per-query cases
+- side-by-side explanations and judge reasons
+- PDF export
+- fairness-hash mismatch warning
+
+## PDF report
+
+~~~bash
+python harness/export_compare_pdf.py results/qwen_vs_llama_dev.jsonl
+~~~
+
+The PDF includes the executive comparison, paired statistics, SQL-category performance, pair outcomes and disagreement cases.
+
+## Tests
+
+No Ollama server is required for the unit tests:
+
+~~~bash
+python -m unittest discover -s tests -v
+python -m py_compile harness/*.py dashboard/server.py
+~~~
+
+## Legacy workflow
+
+harness/run.py remains available for the original single-generator workflow. New A/B comparisons should use harness/compare.py.
