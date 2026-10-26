@@ -12,7 +12,13 @@ Usage:
 import json
 import os
 import pathlib
+import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
+
+# `python dashboard/server.py` puts dashboard/ (not the repo root) on sys.path,
+# so `from harness.export_pdf import ...` used to fail with ModuleNotFoundError
+# and the "Export PDF" button returned HTTP 500. Make the repo root importable.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 RESULTS_DIR = pathlib.Path("results")
 DATA_DIR = pathlib.Path("data")

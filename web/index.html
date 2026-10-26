@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SQL Explanation Grader: RAG</title>
+  <meta name="description" content="Retrieval-augmented SQL explanations with citations, abstention and a schema-aware evaluation dashboard." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <strong>SQL Explanation Grader: RAG Enhanced</strong>
+        <span>Grounded SQL explanations, source citations, abstention, and baseline-vs-RAG evaluation</span>
+      </div>
+      <div class="top-actions">
+        <span id="health" class="badge"><span class="spinner"></span> checking services</span>
+        <a class="btn small" href="/docs" target="_blank" rel="noopener">API docs</a>
+        <a class="btn small" href="/legacy" target="_blank" rel="noopener">Legacy live dashboard</a>
+        <button class="btn small" id="theme-toggle" type="button" aria-label="Toggle dark mode">Theme</button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="playground">SQL Playground</button>
+      <button role="tab" aria-selected="false" data-tab="evaluation">Evaluation</button>
+      <button role="tab" aria-selected="false" data-tab="knowledge">Knowledge Base</button>
+      <button role="tab" aria-selected="false" data-tab="reports">Reports</button>
+      <button role="tab" aria-selected="false" data-tab="labelling">Human labelling</button>
+    </nav>
+  </div>
+
+  <main>
+    <!-- ============================== PLAYGROUND ============================== -->
+    <section class="tab-panel active" id="tab-playground" role="tabpanel">
+      <div class="grid-2">
+        <div class="stack">
+          <div class="card">
+            <header><h3>Query</h3><span class="spacer"></span>
+              <select id="example-select" aria-label="Load an example" style="width:auto;max-width:260px"><option value="">Load an example...</option></select>
+            </header>
+            <div class="stack">
+              <label class="field">SQL query (SQLite, read-only SELECT)
+                <textarea id="sql-input" class="code" spellcheck="false">SELECT c.name
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id
+WHERE o.id IS NULL
+ORDER BY c.name
+LIMIT 10;</textarea>
+              </label>
+              <label class="field">Database schema (CREATE TABLE statements)
+                <textarea id="schema-input" class="code" spellcheck="false">CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, city TEXT);
+CREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, product_id INTEGER, quantity INTEGER, order_date TEXT);</textarea>
+              </label>
+              <div class="row">
+                <div class="segmented" role="group" aria-label="Mode" id="mode-group">
+                  <button type="button" data-mode="baseline" aria-pressed="false">Baseline</button>
+                  <button type="button" data-mode="rag" aria-pressed="true">RAG</button>
+                  <button type="button" data-mode="both" aria-pressed="false">Compare both</button>
+                </div>
+                <label class="check"><input type="checkbox" id="judge-check" /> Grade with LLM judge</label>
+              </div>
+              <div class="row">
+                <label class="field" style="flex:1">Grounding policy when evidence is insufficient
+                  <select id="policy-select">
+                    <option value="abstain">Abstain (refuse to answer)</option>
+                    <option value="fallback">Fallback (answer without sources, labelled ungrounded)</option>
+                    <option value="off">Off (always answer)</option>
+                  </select>
+                </label>
+              </div>
+              <div class="row">
+                <button class="btn primary" id="explain-btn" type="button">Generate explanation</button>
+                <button class="btn" id="retrieve-btn" type="button">Retrieve evidence only</button>
+                <span id="explain-status" class="muted small"></span>
+              </div>
+              <p class="muted small">Local models run on this machine through Ollama, so a RAG answer can take 20 to 60 seconds. The query is only compiled, never executed.</p>
+            </div>
+          </div>
+          <div class="card">
+            <header><h3>SQL structure</h3><span class="muted small">parsed with SQLGlot</span></header>
+            <div id="analysis-out" class="muted small">Run a query to see the detected SQL features and whether the retrieved documentation covers each one.</div>
+          </div>
+        </div>
+        <div class="stack">
+          <div id="results-out" class="stack"><div class="empty">The explanation, its sources and its grounding status appear here.</div></div>
+          <div class="card">
+            <header><h3>Retrieved context</h3><span class="spacer"></span><span id="context-meta" class="muted small"></span></header>
+            <div id="sources-out" class="stack"><div class="muted small">Passages retrieved from the knowledge base will be listed here with their scores.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== EVALUATION ============================== -->
+    <section class="tab-panel" id="tab-evaluation" role="tabpanel">
+      <div class="stack">
+        <div class="card">
+          <div class="row">
+            <label class="field" style="min-width:240px">Experiment <select id="exp-select"></select></label>
+            <label class="field" style="min-width:240px">Judge configuration <select id="judge-select"></select></label>
+            <span class="spacer"></span>
+            <div id="exp-meta" class="muted small" style="max-width:520px"></div>
+          </div>
+          <div id="exp-provenance" class="provenance" style="margin-top:12px">
+            <b>Live experiment.</b> "Judge approval" is the share of explanations an LLM judge graded good. It is an automated, unverified measurement, not verified accuracy. Agreement with reference labels is shown further down.
+          </div>
+        </div>
+        <div id="eval-empty" class="empty hidden">No experiment results yet. Run <code>python -m sqlrag experiment dev my_run</code>.</div>
+        <div id="eval-body" class="stack">
+          <div class="tiles" id="kpi-tiles"></div>
+          <div class="grid-cols">
+            <div class="card">
+              <header><h3>Rubric scores by dimension</h3><span class="muted small">mean judge score, 1 to 5</span></header>
+              <div class="legend"><span><span class="legend-swatch" style="background:var(--series-1)"></span>Baseline (prompt only)</span><span><span class="legend-swatch" style="background:var(--series-2)"></span>RAG</span></div>
+              <div id="chart-dims" class="chart"></div>
+              <details><summary>Table view</summary><div id="table-dims" class="table-wrap"></div></details>
+            </div>
+            <div class="card">
+              <header><h3>Deterministic checks</h3><span class="muted small">rule-based, no LLM</span></header>
+              <div id="table-checks" class="table-wrap"></div>
+            </div>
+          </div>
+          <div class="card">
+            <header><h3>Judge approval by SQL feature</h3><span class="muted small">dataset feature label; n per condition shown</span></header>
+            <div class="legend"><span><span class="legend-swatch" style="background:var(--series-1)"></span>Baseline</span><span><span class="legend-swatch" style="background:var(--series-2)"></span>RAG</span></div>
+            <div id="chart-features" class="chart"></div>
+            <details><summary>Table view</summary><div id="table-features" class="table-wrap"></div></details>
+          </div>
+          <div class="grid-cols">
+            <div class="card">
+              <header><h3>Latency and tokens</h3><span class="muted small">per explanation, this machine</span></header>
+              <div id="table-perf" class="table-wrap"></div>
+            </div>
+            <div class="card">
+              <header><h3>Grounding (RAG)</h3></header>
+              <div id="table-grounding" class="table-wrap"></div>
+            </div>
+          </div>
+          <div class="card">
+            <header><h3>Retrieval performance</h3><span class="muted small">measured without any LLM</span></header>
+            <div id="retrieval-prov" class="muted small"></div>
+            <div id="table-retrieval" class="table-wrap"></div>
+          </div>
+          <div class="card">
+            <header><h3>Judge vs reference labels</h3></header>
+            <div class="provenance info small">Human labels and AI-assisted reference labels are reported separately and never mixed. AI-assisted labels are a second opinion, not human ground truth.</div>
+            <div id="agreement-out" style="margin-top:10px"></div>
+          </div>
+          <div class="card">
+            <header><h3>Historical results</h3><span class="muted small">recorded before the RAG extension</span></header>
+            <div class="provenance small">Historical runs used the original judge, which did not receive the database schema. Their numbers are not directly comparable with the new schema-aware judge.</div>
+            <div id="table-historical" class="table-wrap" style="margin-top:10px"></div>
+          </div>
+          <div class="card">
+            <header><h3>Item inspector</h3><span class="spacer"></span>
+              <select id="item-filter" aria-label="Filter items" style="width:auto">
+                <option value="all">All items</option>
+                <option value="disagree">Conditions disagree</option>
+                <option value="only_rag">Only RAG approved</option>
+                <option value="only_base">Only baseline approved</option>
+                <option value="both_bad">Both rejected</option>
+                <option value="abstained">RAG abstained</option>
+              </select>
+              <input type="text" id="item-search" placeholder="Search SQL or id" style="width:200px" />
+            </header>
+            <div class="inspector">
+              <div class="item-list" id="item-list"></div>
+              <div id="item-detail"><div class="empty">Select an item.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== KNOWLEDGE BASE ============================== -->
+    <section class="tab-panel" id="tab-knowledge" role="tabpanel">
+      <div class="stack">
+        <div class="tiles" id="kb-tiles"></div>
+        <div class="card">
+          <header><h3>Indexed documents</h3><span class="spacer"></span><button class="btn small" id="kb-refresh" type="button">Refresh</button></header>
+          <div id="kb-docs" class="table-wrap"></div>
+        </div>
+        <div class="grid-cols">
+          <div class="card">
+            <header><h3>Add a document</h3><span class="muted small">PDF, Markdown, HTML or text</span></header>
+            <form id="upload-form" class="stack">
+              <label class="field">File <input type="file" name="file" accept=".pdf,.md,.markdown,.txt,.html,.htm" required /></label>
+              <label class="field">Title <input type="text" name="title" placeholder="e.g. Course notes: joins" /></label>
+              <label class="field">License or reuse terms <input type="text" name="license" placeholder="e.g. CC BY 4.0, own work" required /></label>
+              <label class="field">Source URL (optional) <input type="text" name="source_url" /></label>
+              <label class="field">Admin token (only if the server sets one) <input type="password" id="admin-token" autocomplete="off" /></label>
+              <div class="row"><button class="btn primary" type="submit">Ingest document</button><span id="upload-status" class="small muted"></span></div>
+              <p class="muted small">Only add documents you are allowed to reuse. Ingestion is idempotent: re-adding identical text changes nothing, and duplicates of indexed documents are detected.</p>
+            </form>
+          </div>
+          <div class="card">
+            <header><h3>Search the knowledge base</h3></header>
+            <div class="stack">
+              <div class="row">
+                <input type="text" id="kb-query" value="what happens to rows without a match in a left join" />
+                <select id="kb-mode" style="width:auto"><option value="hybrid">hybrid</option><option value="dense">dense</option><option value="bm25">bm25</option></select>
+                <button class="btn" id="kb-search" type="button">Search</button>
+              </div>
+              <div id="kb-results" class="stack"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== REPORTS ============================== -->
+    <section class="tab-panel" id="tab-reports" role="tabpanel">
+      <div class="grid-cols">
+        <div class="card">
+          <header><h3>Comparative RAG report</h3></header>
+          <p class="small muted">Builds a PDF for the experiment and judge selected on the Evaluation tab.</p>
+          <div class="row"><button class="btn primary" id="build-pdf" type="button">Generate PDF</button>
+            <a class="btn" id="dl-csv" href="#">Download items (CSV)</a><a class="btn" id="dl-json" href="#">Download summary (JSON)</a></div>
+          <p id="pdf-status" class="small muted" style="margin-top:8px"></p>
+        </div>
+        <div class="card">
+          <header><h3>All PDF reports</h3><span class="spacer"></span><button class="btn small" id="reports-refresh" type="button">Refresh</button></header>
+          <div id="reports-list" class="table-wrap"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== LABELLING ============================== -->
+    <section class="tab-panel" id="tab-labelling" role="tabpanel">
+      <div class="grid-2">
+        <div class="card">
+          <header><h3>Blind human labelling</h3></header>
+          <div class="stack small">
+            <p>Label explanations as <b>good</b> or <b>bad</b> using the project's labelling guide: an explanation is good only if it is correct, complete and clear. You will not be told whether an explanation came from the baseline or the RAG system.</p>
+            <p>Labels are saved with <code>label_source: "human"</code> to <code>data/labels/human_labels.jsonl</code> and are reported separately from AI-assisted labels.</p>
+            <label class="field">Your name or initials <input type="text" id="annotator" placeholder="e.g. LB" /></label>
+            <label class="field">Experiment <select id="label-exp"></select></label>
+            <div class="row"><button class="btn primary" id="label-start" type="button">Load next explanation</button><span id="label-progress" class="muted"></span></div>
+          </div>
+        </div>
+        <div class="card" id="label-card">
+          <div class="empty">Enter your name and load an explanation.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="page">Retrieval uses BAAI/bge-small-en-v1.5 embeddings in ChromaDB plus BM25, fused with Reciprocal Rank Fusion. Corpus: SQLite documentation (public domain) and PostgreSQL tutorials (PostgreSQL License). LLM-judge scores are automated measurements and can be wrong.</footer>
+
+  <dialog id="chunk-dialog"><div class="dlg-head"><h3 id="dlg-title">Chunks</h3><span class="spacer"></span><button class="btn small" type="button" onclick="this.closest('dialog').close()">Close</button></div><div class="dlg-body" id="dlg-body"></div></dialog>
+  <div class="tooltip hidden" id="tooltip" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>

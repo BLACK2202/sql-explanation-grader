@@ -1,0 +1,33 @@
+[project]
+name = "sql-explanation-grader"
+version = "0.3.0"
+description = "Plain-language SQL explanations graded by an LLM judge, extended with Retrieval-Augmented Generation."
+requires-python = ">=3.11"
+readme = "README.md"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "ollama: needs a running local Ollama server and pulled models (skipped unless RUN_OLLAMA_TESTS=1)",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::FutureWarning",
+]
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
+extend-exclude = ["corpus", "results", "reports", "rag_store", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I"]
+ignore = ["E501", "B008", "B904", "E731", "B905"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]
+"harness/*" = ["E401", "E702", "E741", "I001", "B007", "F401", "W291", "W292", "W293"]
+"dashboard/*" = ["E402", "F401", "I001", "W292", "W293"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["sqlrag", "conftest"]

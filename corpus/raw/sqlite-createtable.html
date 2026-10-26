@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html><head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link href="sqlite.css" rel="stylesheet">
+<title>CREATE TABLE</title>
+<!-- path= -->
+</head>
+<body>
+<div class=nosearch>
+<a href="index.html">
+<img class="logo" src="images/sqlite370_banner.svg" alt="SQLite" border="0">
+</a>
+<div><!-- IE hack to prevent disappearing logo --></div>
+<div class="tagline desktoponly">
+Small. Fast. Reliable.<br>Choose any three.
+</div>
+<div class="menu mainmenu">
+<ul>
+<li><a href="index.html">Home</a>
+<li class='mobileonly'><a href="javascript:void(0)" onclick='toggle_div("submenu")'>Menu</a>
+<li class='wideonly'><a href='about.html'>About</a>
+<li class='desktoponly'><a href="docs.html">Documentation</a>
+<li class='desktoponly'><a href="download.html">Download</a>
+<li class='wideonly'><a href='copyright.html'>License</a>
+<li class='desktoponly'><a href="support.html">Support</a>
+<li class='desktoponly'><a href="prosupport.html">Purchase</a>
+<li class='search' id='search_menubutton'>
+<a href="javascript:void(0)" onclick='toggle_search()'>Search</a>
+</ul>
+</div>
+<div class="menu submenu" id="submenu">
+<ul>
+<li><a href='about.html'>About</a>
+<li><a href='docs.html'>Documentation</a>
+<li><a href='download.html'>Download</a>
+<li><a href='support.html'>Support</a>
+<li><a href='prosupport.html'>Purchase</a>
+</ul>
+</div>
+<div class="searchmenu" id="searchmenu">
+<form method="GET" action="search">
+<select name="s" id="searchtype">
+<option value="d">Search Documentation</option>
+<option value="c">Search Changelog</option>
+</select>
+<input type="text" name="q" id="searchbox" value="">
+<input type="submit" value="Go">
+</form>
+</div>
+</div>
+
+<div class=fancy>
+<div class=nosearch>
+<div class="fancy_title">
+CREATE TABLE
+</div>
+<details class="fancy_toc">
+<summary>Table Of Contents</summary>
+<div id="toc_sub"><div class="fancy-toc1"><a href="#syntax">1. Syntax</a></div>
+<div class="fancy-toc1"><a href="#the_create_table_command">2. The CREATE TABLE command</a></div>
+<div class="fancy-toc2"><a href="#create_table_as_select_statements">2.1. CREATE TABLE ... AS SELECT Statements</a></div>
+<div class="fancy-toc1"><a href="#column_definitions">3. Column Definitions</a></div>
+<div class="fancy-toc2"><a href="#column_data_types">3.1. Column Data Types</a></div>
+<div class="fancy-toc2"><a href="#the_default_clause">3.2. The DEFAULT clause</a></div>
+<div class="fancy-toc2"><a href="#the_collate_clause">3.3. The COLLATE clause</a></div>
+<div class="fancy-toc2"><a href="#the_generated_always_as_clause">3.4. The GENERATED ALWAYS AS clause</a></div>
+<div class="fancy-toc2"><a href="#the_primary_key">3.5. The PRIMARY KEY</a></div>
+<div class="fancy-toc2"><a href="#unique_constraints">3.6. UNIQUE constraints</a></div>
+<div class="fancy-toc2"><a href="#check_constraints">3.7. CHECK constraints</a></div>
+<div class="fancy-toc2"><a href="#not_null_constraints">3.8. NOT NULL constraints</a></div>
+<div class="fancy-toc1"><a href="#constraint_enforcement">4. Constraint enforcement</a></div>
+<div class="fancy-toc2"><a href="#response_to_constraint_violations">4.1. Response to constraint violations</a></div>
+<div class="fancy-toc1"><a href="#rowids_and_the_integer_primary_key">5. ROWIDs and the INTEGER PRIMARY KEY</a></div>
+</div>
+</details>
+</div>
+
+
+
+
+<h1 id="syntax"><span>1. </span>Syntax</h1>
+
+<p><b><a href="syntax/create-table-stmt.html">create-table-stmt:</a></b>
+<button id='x458a564a' onclick='hideorshow("x458a564a","x745d00db")'>hide</button></p>
+ <div id='x745d00db' class='imgcontainer'>
+ <div style="max-width:718px">
+</div>
+<p><b><a href="syntax/column-def.html">column-def:</a></b>
+<button id='x6807b908' onclick='hideorshow("x6807b908","x22b3b056")'>show</button></p>
+ <div id='x22b3b056' style='display:none;' class='imgcontainer'>
+ <div style="max-width:614px">
+</div>
+<p><b><a href="syntax/column-constraint.html">column-constraint:</a></b>
+<button id='x9591767a' onclick='hideorshow("x9591767a","xb5e43d6d")'>show</button></p>
+ <div id='xb5e43d6d' style='display:none;' class='imgcontainer'>
+ <div style="max-width:844px">
+</div>
+<p><b><a href="syntax/conflict-clause.html">conflict-clause:</a></b>
+<button id='xfadad05b' onclick='hideorshow("xfadad05b","xe8b5197b")'>show</button></p>
+ <div id='xe8b5197b' style='display:none;' class='imgcontainer'>
+ <div style="max-width:451px">
+</div>
+</div>
+<p><b><a href="syntax/expr.html">expr:</a></b>
+<button id='xe5c61087' onclick='hideorshow("xe5c61087","xc15b1ae0")'>show</button></p>
+ <div id='xc15b1ae0' style='display:none;' class='imgcontainer'>
+ <div style="max-width:963px">
+</div>
+<p><b><a href="syntax/filter-clause.html">filter-clause:</a></b>
+<button id='xd4324e90' onclick='hideorshow("xd4324e90","x48e784d7")'>show</button></p>
+ <div id='x48e784d7' style='display:none;' class='imgcontainer'>
+ <div style="max-width:422px">
+</div>
+</div>
+<p><b><a href="syntax/function-arguments.html">function-arguments:</a></b>
+<button id='x9e80b44f' onclick='hideorshow("x9e80b44f","x992400ca")'>show</button></p>
+ <div id='x992400ca' style='display:none;' class='imgcontainer'>
+ <div style="max-width:456px">
+</div>
+<p><b><a href="syntax/ordering-term.html">ordering-term:</a></b>
+<button id='x2cbaec50' onclick='hideorshow("x2cbaec50","x333e092c")'>show</button></p>
+ <div id='x333e092c' style='display:none;' class='imgcontainer'>
+ <div style="max-width:798px">
+</div>
+</div>
+</div>
+<p><b><a href="syntax/over-clause.html">over-clause:</a></b>
+<button id='x450fb916' onclick='hideorshow("x450fb916","xdd9fba73")'>show</button></p>
+ <div id='xdd9fba73' style='display:none;' class='imgcontainer'>
+ <div style="max-width:600px">
+</div>
+<p><b><a href="syntax/frame-spec.html">frame-spec:</a></b>
+<button id='x2b7df186' onclick='hideorshow("x2b7df186","xdd7f164d")'>show</button></p>
+ <div id='xdd7f164d' style='display:none;' class='imgcontainer'>
+ <div style="max-width:1039px">
+</div>
+</div>
+<p><b><a href="syntax/ordering-term.html">ordering-term:</a></b>
+<button id='xb9a244c4' onclick='hideorshow("xb9a244c4","x027d21b9")'>show</button></p>
+ <div id='x027d21b9' style='display:none;' class='imgcontainer'>
+ <div style="max-width:798px">
+</div>
+</div>
+</div>
+<p><b><a href="syntax/raise-function.html">raise-function:</a></b>
+<button id='x9bde9c92' onclick='hideorshow("x9bde9c92","xc3e52fb4")'>show</button></p>
+ <div id='xc3e52fb4' style='display:none;' class='imgcontainer'>
+ <div style="max-width:542px">
+</div>
+</div>
+</div>
+<p><b><a href="syntax/foreign-key-clause.html">foreign-key-clause:</a></b>
+<button id='xf537f2ed' onclick='hideorshow("xf537f2ed","xe55f9c3e")'>show</button></p>
+ <div id='xe55f9c3e' style='display:none;' class='imgcontainer'>
+ <div style="max-width:648px">
+</div>
+</div>
+<p><b><a href="syntax/literal-value.html">literal-value:</a></b>
+<button id='x5bfa14dc' onclick='hideorshow("x5bfa14dc","x281bde28")'>show</button></p>
+ <div id='x281bde28' style='display:none;' class='imgcontainer'>
+ <div style="max-width:341px">
+</div>
+</div>
+<p><b><a href="syntax/signed-number.html">signed-number:</a></b>
+<button id='x5353529d' onclick='hideorshow("x5353529d","x0ac6e48e")'>show</button></p>
+ <div id='x0ac6e48e' style='display:none;' class='imgcontainer'>
+ <div style="max-width:292px">
+</div>
+</div>
+</div>
+<p><b><a href="syntax/type-name.html">type-name:</a></b>
+<button id='x5552c83b' onclick='hideorshow("x5552c83b","xa9e9e4c2")'>show</button></p>
+ <div id='xa9e9e4c2' style='display:none;' class='imgcontainer'>
+ <div style="max-width:661px">
+</div>
+<p><b><a href="syntax/signed-number.html">signed-number:</a></b>
+<button id='xabe6e705' onclick='hideorshow("xabe6e705","x0656531d")'>show</button></p>
+ <div id='x0656531d' style='display:none;' class='imgcontainer'>
+ <div style="max-width:292px">
+</div>
+</div>
+</div>
+</div>
+<p><b><a href="syntax/select-stmt.html">select-stmt:</a></b>
+<button id='x0cd82bae' onclick='hideorshow("x0cd82bae","xe2e4c115")'>show</button></p>
+ <div id='xe2e4c115' style='display:none;' class='imgcontainer'>
+ <div style="max-width:669px">
+</div>
+<p><b><a href="syntax/common-table-expression.html">common-table-expression:</a></b>
+<button id='x11795cde' onclick='hideorshow("x11795cde","x8eaeb3c0")'>show</button></p>
+ <div id='x8eaeb3c0' style='display:none;' class='imgcontainer'>
+ <div style="max-width:638px">
+</div>
+</div>
+<p><b><a href="syntax/compound-operator.html">compound-operator:</a></b>
+<button id='xdee54a29' onclick='hideorshow("xdee54a29","x7300e8fe")'>show</button></p>
+ <div id='x7300e8fe' style='display:none;' class='imgcontainer'>
+ <div style="max-width:293px">
+</div>
+</div>
+<p><b><a href="syntax/expr.html">expr:</a></b>
+<button id='x178604b5' onclick='hideorshow("x178604b5","x2bbed54f")'>show</button></p>
+ <div id='x2bbed54f' style='display:none;' class='imgcontainer'>
+ <div style="max-width:963px">
+</div>
+<p><b><a href="syntax/filter-clause.html">filter-clause:</a></b>
+<button id='x46578539' onclick='hideorshow("x46578539","xcb2e8b18")'>show</button></p>
+ <div id='xcb2e8b18' style='display:none;' class='imgcontainer'>
+ <div style="max-width:422px">
+</div>
+</div>
+<p><b><a href="syntax/function-arguments.html">function-arguments:</a></b>
+<button id='xd85fd6b8' onclick='hideorshow("xd85fd6b8","xe3425013")'>show</button></p>
+ <div id='xe3425013' style='display:none;' class='imgcontainer'>
+ <div style="max-width:456px">
+</div>
+</div>
+<p><b><a href="syntax/literal-value.html">literal-value:</a></b>
+<button id='xa9040636' onclick='hideorshow("xa9040636","x27fa6cda")'>show</button></p>
+ <div id='x27fa6cda' style='display:none;' class='imgcontainer'>
+ <div style="max-width:341px">
+</div>
+</div>
+<p><b><a href="syntax/over-clause.html">over-clause:</a></b>
+<button id='x29857fde' onclick='hideorshow("x29857fde","x1af43f99")'>show</button></p>
+ <div id='x1af43f99' style='display:none;' class='imgcontainer'>
+ <div style="max-width:600px">
+</div>
+<p><b><a href="syntax/frame-spec.html">frame-spec:</a></b>
+<button id='xa7bb2c4a' onclick='hideorshow("xa7bb2c4a","x743d3c81")'>show</button></p>
+ <div id='x743d3c81' style='display:none;' class='imgcontainer'>
+ <div style="max-width:1039px">
+</div>
+</div>
+</div>
+<p><b><a href="syntax/raise-function.html">raise-function:</a></b>
+<button id='x04fab997' onclick='hideorshow("x04fab997","x8d18c4a6")'>show</button></p>
+ <div id='x8d18c4a6' style='display:none;' class='imgcontainer'>
+ <div style="max-width:542px">
+</div>
+</div>
+<p><b><a href="syntax/type-name.html">type-name:</a></b>
+<button id='x3dd1786c' onclick='hideorshow("x3dd1786c","xc82a8c46")'>show</button></p>
+ <div id='xc82a8c46' style='display:none;' class='imgcontainer'>
+ <div style="max-width:661px">
+</div>
+<p><b><a href="syntax/signed-number.html">signed-number:</a></b>
+<button id='xf02cd04d' onclick='hideorshow("xf02cd04d","x27741c94")'>show</button></p>
+ <div id='x27741c94' style='display:none;' class='imgcontainer'>
+ <div style="max-width:292px">
+</div>
+</div>
+</div>
+</div>
+<p><b><a href="syntax/join-clause.html">join-clause:</a></b>
+<button id='x1a3785d5' onclick='hideorshow("x1a3785d5","x1fa074d7")'>show</button></p>
+ <div id='x1fa074d7' style='display:none;' class='imgcontainer'>
+ <div style="max-width:793px">
+</div>
+<p><b><a href="syntax/join-constraint.html">join-constraint:</a></b>
+<button id='x104034b0' onclick='hideorshow("x104034b0","x9ee8b766")'>show</button></p>
+ <div id='x9ee8b766' style='display:none;' class='imgcontainer'>
+ <div style="max-width:483px">
+</div>
+</div>
+<p><b><a href="syntax/join-operator.html">join-operator:</a></b>
+<button id='xe26abe0c' onclick='hideorshow("xe26abe0c","x764ca4ad")'>show</button></p>
+ <div id='x764ca4ad' style='display:none;' class='imgcontainer'>
+ <div style="max-width:620px">
+</div>
+</div>
+</div>
+<p><b><a href="syntax/ordering-term.html">ordering-term:</a></b>
+<button id='xc3127a1f' onclick='hideorshow("xc3127a1f","x0e7b9b48")'>show</button></p>
+ <div id='x0e7b9b48' style='display:none;' class='imgcontainer'>
+ <div style="max-width:798px">
+</div>
+</div>
+<p><b><a href="syntax/result-column.html">result-column:</a></b>
+<button id='xa303c06e' onclick='hideorshow("xa303c06e","x482ed7fb")'>show</button></p>
+ <div id='x482ed7fb' style='display:none;' class='imgcontainer'>
+ <div style="max-width:398px">
+</div>
+</div>
+<p><b><a href="syntax/table-or-subquery.html">table-or-subquery:</a></b>
+<button id='x21052e95' onclick='hideorshow("x21052e95","x7c74b2b3")'>show</button></p>
+ <div id='x7c74b2b3' style='display:none;' class='imgcontainer'>
+ <div style="max-width:720px">
+</div>
+</div>
+<p><b><a href="syntax/window-defn.html">window-defn:</a></b>
+<button id='xab6351ac' onclick='hideorshow("xab6351ac","x4205ef81")'>show</button></p>
+ <div id='x4205ef81' style='display:none;' class='imgcontainer'>
+ <div style="max-width:479px">
+</div>
+<p><b><a href="syntax/frame-spec.html">frame-spec:</a></b>
+<button id='xabf61a5f' onclick='hideorshow("xabf61a5f","x05ae526d")'>show</button></p>
+ <div id='x05ae526d' style='display:none;' class='imgcontainer'>
+ <div style="max-width:1039px">
+</div>
+</div>
+</div>
+</div>
+<p><b><a href="syntax/table-constraint.html">table-constraint:</a></b>
+<button id='x54677503' onclick='hideorshow("x54677503","x0694dd0b")'>show</button></p>
+ <div id='x0694dd0b' style='display:none;' class='imgcontainer'>
+ <div style="max-width:782px">
+</div>
+<p><b><a href="syntax/conflict-clause.html">conflict-clause:</a></b>
+<button id='xb4fdcb2c' onclick='hideorshow("xb4fdcb2c","xfcd372c3")'>show</button></p>
+ <div id='xfcd372c3' style='display:none;' class='imgcontainer'>
+ <div style="max-width:451px">
+</div>
+</div>
+<p><b><a href="syntax/expr.html">expr:</a></b>
+<button id='x5839b932' onclick='hideorshow("x5839b932","xeec0c9e9")'>show</button></p>
+ <div id='xeec0c9e9' style='display:none;' class='imgcontainer'>
+ <div style="max-width:963px">
+</div>
+<p><b><a href="syntax/filter-clause.html">filter-clause:</a></b>
+<button id='xf3e988ff' onclick='hideorshow("xf3e988ff","x475fb609")'>show</button></p>
+ <div id='x475fb609' style='display:none;' class='imgcontainer'>
+ <div style="max-width:422px">
+</div>
+</div>
+<p><b><a href="syntax/function-arguments.html">function-arguments:</a></b>
+<button id='x4ca24bd1' onclick='hideorshow("x4ca24bd1","xb42d00e5")'>show</button></p>
+ <div id='xb42d00e5' style='display:none;' class='imgcontainer'>
+ <div style="max-width:456px">
+</div>
+<p><b><a href="syntax/ordering-term.html">ordering-term:</a></b>
+<button id='x9d0ae52c' onclick='hideorshow("x9d0ae52c","x475b8e7c")'>show</button></p>
+ <div id='x475b8e7c' style='display:none;' class='imgcontainer'>
+ <div style="max-width:798px">
+</div>
+</div>
+</div>
+<p><b><a href="syntax/literal-value.html">literal-value:</a></b>
+<button id='x92ec4f96' onclick='hideorshow("x92ec4f96","xe4df2fa9")'>show</button></p>
+ <div id='xe4df2fa9' style='display:none;' class='imgcontainer'>
+ <div style="max-width:341px">
+</div>
+</div>
+<p><b><a href="syntax/over-clause.html">over-clause:</a></b>
+<button id='x8a3b81cf' onclick='hideorshow("x8a3b81cf","x409f8e93")'>show</button></p>
+ <div id='x409f8e93' style='display:none;' class='imgcontainer'>
+ <div style="max-width:600px">
+</div>
+<p><b><a href="syntax/frame-spec.html">frame-spec:</a></b>
+<button id='x20d03955' onclick='hideorshow("x20d03955","xc57aab8d")'>show</button></p>
+ <div id='xc57aab8d' style='display:none;' class='imgcontainer'>
+ <div style="max-width:1039px">
+</div>
+</div>
+<p><b><a href="syntax/ordering-term.html">ordering-term:</a></b>
+<button id='x95d825c7' onclick='hideorshow("x95d825c7","xb26d3001")'>show</button></p>
+ <div id='xb26d3001' style='display:none;' class='imgcontainer'>
+ <div style="max-width:798px">
+</div>
+</div>
+</div>
+<p><b><a href="syntax/raise-function.html">raise-function:</a></b>
+<button id='x1f69baa1' onclick='hideorshow("x1f69baa1","x77e45094")'>show</button></p>
+ <div id='x77e45094' style='display:none;' class='imgcontainer'>
+ <div style="max-width:542px">
+</div>
+</div>
+<p><b><a href="syntax/type-name.html">type-name:</a></b>
+<button id='x1a2958d8' onclick='hideorshow("x1a2958d8","x2c70f12f")'>show</button></p>
+ <div id='x2c70f12f' style='display:none;' class='imgcontainer'>
+ <div style="max-width:661px">
+</div>
+<p><b><a href="syntax/signed-number.html">signed-number:</a></b>
+<button id='x1b7c1061' onclick='hideorshow("x1b7c1061","x20fec505")'>show</button></p>
+ <div id='x20fec505' style='display:none;' class='imgcontainer'>
+ <div style="max-width:292px">
+</div>
+</div>
+</div>
+</div>
+<p><b><a href="syntax/foreign-key-clause.html">foreign-key-clause:</a></b>
+<button id='xede7c1f7' onclick='hideorshow("xede7c1f7","x702d9983")'>show</button></p>
+ <div id='x702d9983' style='display:none;' class='imgcontainer'>
+ <div style="max-width:648px">
+</div>
+</div>
+<p><b><a href="syntax/indexed-column.html">indexed-column:</a></b>
+<button id='xdd78dcae' onclick='hideorshow("xdd78dcae","x99728806")'>show</button></p>
+ <div id='x99728806' style='display:none;' class='imgcontainer'>
+ <div style="max-width:696px">
+</div>
+</div>
+</div>
+<p><b><a href="syntax/table-options.html">table-options:</a></b>
+<button id='xde537bb9' onclick='hideorshow("xde537bb9","xfd0f677e")'>show</button></p>
+ <div id='xfd0f677e' style='display:none;' class='imgcontainer'>
+ <div style="max-width:324px">
+</div>
+</div>
+</div>
+
+
+<h1 id="the_create_table_command"><span>2. </span>The CREATE TABLE command</h1>
+
+<p>The "CREATE TABLE" command is used to create a new table in an SQLite 
+database. A CREATE TABLE command specifies the following attributes of the
+new table:
+
+</p><ul>
+  <li><p>The name of the new table.
+
+  </p></li><li><p> The database in which the new table is created. Tables may be 
+      created in the main database, the temp database, or in any attached
+      database.
+
+  </p></li><li><p> The name of each column in the table.
+
+  </p></li><li><p> The declared type of each column in the table.
+
+  </p></li><li><p> A default value or expression for each column in the table.
+
+  </p></li><li><p> A default collation sequence to use with each column.
+
+  </p></li><li><p> An optional PRIMARY KEY for the table. Both single column and
+       composite (multiple column) primary keys are supported.
+
+  </p></li><li><p> Zero or more constraints on the table content.
+          SQLite supports UNIQUE, NOT NULL, CHECK and FOREIGN KEY constraints.
+
+  </p></li><li><p> Optionally, a <a href="gencol.html">generated column</a> constraint.
+
+  </p></li><li><p> Whether the table is a <a href="withoutrowid.html">WITHOUT ROWID</a> table.
+
+  </p></li><li><p> Whether the table is subject to <a href="stricttables.html">strict type checking</a>.
+</p></li></ul>
+
+<p>Every CREATE TABLE statement must specify a name for the new table.
+  Table names that begin with "sqlite_" are reserved for internal use. It
+  is an error to attempt to create a table with a name that starts with
+  "sqlite_".
+
+</p><p> If a <span class='yyterm'>schema-name</span> is specified, it must be either "main", 
+  "temp", or the name of an <a href="lang_attach.html">attached database</a>. In this case
+  the new table is created in the named database. If the "TEMP" or "TEMPORARY"
+  keyword occurs between the "CREATE" and "TABLE" then the new table is
+  created in the temp database. It is an error to specify both a 
+  <span class='yyterm'>schema-name</span> and the TEMP or TEMPORARY keyword, unless the
+  <span class='yyterm'>schema-name</span> is "temp". 
+  If no schema name is specified and the
+  TEMP keyword is not present then the table is created in the main
+  database.
+
+</p><p>
+  It is usually an error to attempt to create a new table in a database that
+  already contains a table, index or view of the same name. However, if the
+  "IF NOT EXISTS" clause is specified as part of the CREATE TABLE statement and
+  a table or view of the same name already exists, the CREATE TABLE command
+  simply has no effect (and no error message is returned). An error is still
+  returned if the table cannot be created because of an existing index, even 
+  if the "IF NOT EXISTS" clause is specified.
+
+</p><p>It is not an error to create a table that has the same name as an 
+  existing <a href="lang_createtrigger.html">trigger</a>.
+
+</p><p>Tables are removed using the <a href="lang_droptable.html">DROP TABLE</a> statement.  </p>
+
+<a name="createtabas"></a>
+
+<h2 id="create_table_as_select_statements"><span>2.1. </span>CREATE TABLE ... AS SELECT Statements</h2>
+
+<p>A "CREATE TABLE ... AS SELECT" statement creates and populates a database
+table based on the results of a SELECT statement. The table has the same
+number of columns as the SELECT statement returns. The name of
+each column is the same as the name of the corresponding column in the result
+set of the SELECT statement. The declared type of each column is determined
+by the <a href="datatype3.html#expraff">expression affinity</a> of the corresponding expression in the result set
+of the SELECT statement, as follows:
+</p>
+
+<center><table border="1">
+  <tr><th>Expression Affinity   </th><th>Column Declared Type
+  </th></tr><tr><td>TEXT                  </td><td>"TEXT"
+  </td></tr><tr><td>NUMERIC               </td><td>"NUM"
+  </td></tr><tr><td>INTEGER               </td><td>"INT"
+  </td></tr><tr><td>REAL                  </td><td>"REAL"
+  </td></tr><tr><td>BLOB (a.k.a "NONE")   </td><td>"" (empty string)
+</td></tr></table></center>
+
+<p>A table created using CREATE TABLE AS has no PRIMARY KEY and no
+constraints of any kind. The default value of each column is NULL. The default
+collation sequence for each column of the new table is BINARY.
+
+</p><p>Tables created using CREATE TABLE AS are initially populated with the
+rows of data returned by the SELECT statement. Rows are assigned contiguously
+ascending <a href="lang_createtable.html#rowid">rowid</a> values, starting with 1, in the <a href="lang_select.html#orderby">order</a> that they
+are returned by the SELECT statement.
+
+<a name="tablecoldef"></a>
+
+</p><h1 id="column_definitions"><span>3. </span>Column Definitions</h1>
+
+<p>Unless it is a CREATE TABLE ... AS SELECT statement, a CREATE TABLE includes
+one or more <a href="syntax/column-def.html">column definitions</a>, optionally followed by a list of
+<a href="syntax/table-constraint.html">table constraints</a>.  Each column definition consists of the
+name of the column, optionally followed by the declared type of the column,
+then one or more optional <a href="syntax/column-constraint.html">column constraints</a>. Included in
+the definition of "column constraints" for the purposes of the previous
+statement are the COLLATE and DEFAULT clauses, even though these are not really
+constraints in the sense that they do not restrict the data that the table may
+contain. The other constraints - NOT NULL, CHECK, UNIQUE, PRIMARY KEY and
+FOREIGN KEY constraints - impose restrictions on the table data.
+
+</p><p>The number of columns in a table is limited by the <a href="limits.html#max_column">SQLITE_MAX_COLUMN</a>
+compile-time parameter. A single row of a table cannot store more than
+<a href="limits.html#max_length">SQLITE_MAX_LENGTH</a> bytes of data. Both of these limits can be lowered at
+runtime using the <a href="c3ref/limit.html">sqlite3_limit()</a> C/C++ interface.</p>
+
+<h2 id="column_data_types"><span>3.1. </span>Column Data Types</h2>
+
+<p>Unlike most SQL databases, SQLite does not restrict the type of data that
+may be inserted into a column based on the columns declared type. Instead,
+SQLite uses <a href="datatype3.html">dynamic typing</a>. The declared type of a column is used to
+determine the <a href="datatype3.html#affinity">affinity</a> of the column only.
+
+<a name="dfltval"></a>
+
+</p><h2 id="the_default_clause"><span>3.2. </span>The DEFAULT clause</h2>
+<p>The DEFAULT clause specifies a default value to use for the column if no
+value is explicitly provided by the user when doing an <a href="lang_insert.html">INSERT</a>. If there
+is no explicit DEFAULT clause attached to a column definition, then the 
+default value of the column is NULL. An explicit DEFAULT clause may specify
+that the default value is NULL, a string constant, a blob constant, a
+signed-number, or any constant expression enclosed in parentheses. A
+default value may also be one of the special case-independent keywords
+CURRENT_TIME, CURRENT_DATE or CURRENT_TIMESTAMP. For the purposes of the
+DEFAULT clause, an expression is considered constant if it
+contains no sub-queries, column or table references, <a href="lang_expr.html#varparam">bound parameters</a>,
+or string literals enclosed in double-quotes instead of single-quotes.
+
+</p><p>Each time a row is inserted into the table by an INSERT statement that 
+does not provide explicit values for all table columns the values stored in
+the new row are determined by their default values, as follows:
+
+</p><ul>
+  <li><p>If the default value of the column is a constant NULL, text, blob or
+    signed-number value, then that value is used directly in the new row.
+
+  </p></li><li><p>If the default value of a column is an expression in parentheses, then
+    the expression is evaluated once for each row inserted and the results
+    used in the new row.
+
+  </p></li><li><p>If the default value of a column is CURRENT_TIME, CURRENT_DATE or
+    CURRENT_TIMESTAMP, then the value used in the new row is a text
+    representation of the current UTC date and/or time. For CURRENT_TIME, the
+    format of the value is "HH:MM:SS". For CURRENT_DATE, "YYYY-MM-DD". The
+    format for CURRENT_TIMESTAMP is "YYYY-MM-DD HH:MM:SS".
+</p></li></ul>
+
+<a name="collateclause"></a>
+
+<h2 id="the_collate_clause"><span>3.3. </span>The COLLATE clause</h2>
+<p>The COLLATE clause specifies the name of a <a href="datatype3.html#collation">collating sequence</a> to use as
+the default collation sequence for the column. If no COLLATE clause is
+specified, the default collation sequence is <a href="datatype3.html#collation">BINARY</a>.
+
+</p><h2 id="the_generated_always_as_clause"><span>3.4. </span>The GENERATED ALWAYS AS clause</h2>
+<p>A column that includes a GENERATED ALWAYS AS clause is a <a href="gencol.html">generated column</a>.
+Generated columns are supported beginning with SQLite version 3.31.0 (2020-01-22).
+See the <a href="gencol.html">separate documentation</a> for details on the capabilities and
+limitations of generated columns.
+
+<a name="primkeyconst"></a>
+
+</p><h2 id="the_primary_key"><span>3.5. </span>The PRIMARY KEY</h2>
+<p>Each table in SQLite may have at most one PRIMARY KEY. If the
+  keywords PRIMARY KEY are added to a column definition, then the primary key
+  for the table consists of that single column. Or, if a PRIMARY KEY clause 
+  is specified as a <a href="syntax/table-constraint.html">table-constraint</a>, then the primary key of the table
+  consists of the list of columns specified as part of the PRIMARY KEY clause.
+  The PRIMARY KEY clause must contain only column names &mdash; the use of 
+  expressions in an <a href="syntax/indexed-column.html">indexed-column</a> of a PRIMARY KEY is not supported.
+  An error is raised if more than one PRIMARY KEY clause appears in a
+  CREATE TABLE statement.  The PRIMARY KEY is optional for ordinary tables
+  but is required for <a href="withoutrowid.html">WITHOUT ROWID</a> tables.
+
+</p><p>If a table has a single column primary key and the declared type of that
+  column is "INTEGER" and the table is not a <a href="withoutrowid.html">WITHOUT ROWID</a> table,
+  then the column is known as an <a href="lang_createtable.html#rowid">INTEGER PRIMARY KEY</a>.
+  See <a href="lang_createtable.html#rowid">below</a> for a description of the special properties and behaviors
+  associated with an <a href="lang_createtable.html#rowid">INTEGER PRIMARY KEY</a>.
+
+</p><p>Each row in a table with a primary key must have a unique combination
+  of values in its primary key columns. For the purposes of determining
+  the uniqueness of primary key values, NULL values are considered distinct from
+  all other values, including other NULLs. If an <a href="lang_insert.html">INSERT</a> or <a href="lang_update.html">UPDATE</a>
+  statement attempts to modify the table content so that two or more rows
+  have identical primary key values, that is a constraint violation.
+
+</p><p> According to the SQL standard, PRIMARY KEY should always imply NOT NULL.
+  Unfortunately, due to a bug in some early versions, this is not the
+  case in SQLite. Unless the column is an <a href="lang_createtable.html#rowid">INTEGER PRIMARY KEY</a> or
+  the table is a <a href="withoutrowid.html">WITHOUT ROWID</a> table or a <a href="stricttables.html">STRICT</a> table 
+  or the column is declared NOT NULL,
+  SQLite allows NULL values in a PRIMARY KEY column.  SQLite could be fixed to
+  conform to the standard, but doing so might break legacy applications.
+  Hence, it has been decided to merely document the fact that SQLite
+  allows NULLs in most PRIMARY KEY columns.
+
+<a name="uniqueconst"></a>
+
+</p><h2 id="unique_constraints"><span>3.6. </span>UNIQUE constraints</h2>
+<p>A UNIQUE constraint is similar to a PRIMARY KEY constraint, except
+  that a single table may have any number of UNIQUE constraints. For each
+  UNIQUE constraint on the table, each row must contain a unique combination
+  of values in the columns identified by the UNIQUE constraint. 
+  For the purposes of UNIQUE constraints, NULL values
+  are considered distinct from all other values, including other NULLs.
+  As with PRIMARY KEYs, a UNIQUE <a href="syntax/table-constraint.html">table-constraint</a> clause must contain
+  only column names &mdash; the use of 
+  expressions in an <a href="syntax/indexed-column.html">indexed-column</a> of a UNIQUE <a href="syntax/table-constraint.html">table-constraint</a>
+  is not supported.
+  
+
+</p><p>In most cases, UNIQUE and PRIMARY KEY
+  constraints are implemented by creating a unique index in the database.
+  (The exceptions are <a href="lang_createtable.html#rowid">INTEGER PRIMARY KEY</a> and PRIMARY KEYs on 
+  <a href="withoutrowid.html">WITHOUT ROWID</a> tables.)
+  Hence, the following schemas are logically equivalent:
+
+  </p><ol>
+  <li><p>CREATE TABLE t1(a, b UNIQUE);
+  </p></li><li><p>CREATE TABLE t1(a, b PRIMARY KEY);
+  </p></li><li><p>CREATE TABLE t1(a, b);<br>
+         CREATE UNIQUE INDEX t1b ON t1(b);
+  </p></li></ol>
+
+<a name="ckconst"></a>
+
+<h2 id="check_constraints"><span>3.7. </span>CHECK constraints</h2>
+<p>A CHECK constraint may be attached to a column definition or
+  specified as a table constraint. In practice it makes no difference. Each
+  time a new row is inserted into the table or an existing row is updated,
+  the expression associated with each CHECK constraint is evaluated and
+  cast to a NUMERIC value in the same way as a <a href="lang_expr.html#castexpr">CAST expression</a>. If the 
+  result is zero (integer value 0 or real value 0.0), then a constraint
+  violation has occurred. If the CHECK expression evaluates to NULL, or
+  any other non-zero value, it is not a constraint violation.
+  The expression of a CHECK constraint may not contain a subquery.
+
+</p><p>CHECK constraints are only verified when the table is written, not when
+   it is read.  Furthermore, verification of CHECK constraints can be
+   temporarily disabled using the "<a href="pragma.html#pragma_ignore_check_constraints">PRAGMA ignore_check_constraints=ON;</a>"
+   statement.  Hence, it is possible that a query might produce results that
+   violate the CHECK constraints.
+
+<a name="notnullconst"></a>
+
+</p><h2 id="not_null_constraints"><span>3.8. </span>NOT NULL constraints</h2>
+<p>A NOT NULL constraint may only be attached to a column definition,
+  not specified as a table constraint.  Not surprisingly, a NOT NULL
+  constraint dictates that the associated column may not contain a NULL value.
+  Attempting to set the column value to NULL when inserting a new row or
+  updating an existing one causes a constraint violation.  NOT NULL
+  constraints are not verified during queries, so a query of a column might
+  produce a NULL value even though the column is marked as NOT NULL, if the
+  database file is corrupt.
+
+
+</p><h1 id="constraint_enforcement"><span>4. </span>Constraint enforcement</h1>
+
+<p>Constraints are checked during <a href="lang_insert.html">INSERT</a> and <a href="lang_update.html">UPDATE</a> and by
+<a href="pragma.html#pragma_integrity_check">PRAGMA integrity_check</a> and <a href="pragma.html#pragma_quick_check">PRAGMA quick_check</a> and sometimes
+by <a href="lang_altertable.html">ALTER TABLE</a>.  Queries and <a href="lang_delete.html">DELETE</a>
+statements do not normally verify constraints.
+Hence, if a database file has been corrupted (perhaps by an external
+program making direct changes to the database file without going through 
+the SQLite library) a query might return data that violates a constraint.
+For example:
+
+</p><div class="codeblock"><pre>CREATE TABLE t1(x INT CHECK( x>3 ));
+/* Insert a row with X less than 3 by directly writing into the
+** database file using an external program */
+PRAGMA integrity_check;  -- Reports row with x less than 3 as corrupt
+INSERT INTO t1(x) VALUES(2);  -- Fails with SQLITE_CORRUPT
+SELECT x FROM t1;  -- Returns an integer less than 3 in spite of the CHECK constraint
+</pre></div>
+
+<p>Enforcement of CHECK constraints can be temporarily disabled using
+the <a href="pragma.html#pragma_ignore_check_constraints">PRAGMA ignore_check_constraints=ON;</a> statement.
+
+</p><h2 id="response_to_constraint_violations"><span>4.1. </span>Response to constraint violations</h2>
+
+<p>The response to a constraint violation is determined by the
+  <a href="lang_conflict.html">constraint conflict resolution algorithm</a>. Each 
+  PRIMARY KEY, UNIQUE, NOT NULL and CHECK constraint has a default conflict
+  resolution algorithm. PRIMARY KEY, UNIQUE and NOT NULL constraints may be
+  explicitly assigned another default conflict resolution algorithm by
+  including a <a href="syntax/conflict-clause.html">conflict-clause</a> in their definitions.
+  Or, if a constraint definition does not include a <a href="syntax/conflict-clause.html">conflict-clause</a>,
+  the default conflict resolution algorithm is ABORT.
+  The conflict resolution algorithm for CHECK constraints is always ABORT.
+  (For historical compatibility only, table CHECK constraints are allowed
+  to have a conflict resolution clause, but that has no effect.)
+  Different constraints within the
+  same table may have different default conflict resolution algorithms. See
+  the section titled <a href="lang_conflict.html">ON CONFLICT</a> for additional information.
+
+<a name="rowid"></a>
+
+</p><h1 id="rowids_and_the_integer_primary_key"><span>5. </span>ROWIDs and the INTEGER PRIMARY KEY</h1>
+
+<p>Except for <a href="withoutrowid.html">WITHOUT ROWID</a> tables, all rows within SQLite tables
+have a 64-bit signed integer key that uniquely identifies the row within its table.
+This integer is usually
+called the "rowid". The rowid value can be accessed using one of the special
+case-independent names "rowid", "oid", or "_rowid_" in place of a column name.
+If a table contains a user defined column named "rowid", "oid" or "_rowid_",
+then that name always refers the explicitly declared column and cannot be used
+to retrieve the integer rowid value.
+
+</p><p>The rowid (and "oid" and "_rowid_") is omitted in <a href="withoutrowid.html">WITHOUT ROWID</a> tables.
+WITHOUT ROWID tables are only available in SQLite <a href="releaselog/3_8_2.html">version 3.8.2</a>
+(2013-12-06) and later.
+A table that lacks the WITHOUT ROWID clause is called a "rowid table".
+
+</p><p>The data for rowid tables is stored as a B-Tree structure containing
+one entry for each table row, using the rowid value as the key. This means that
+retrieving or sorting records by rowid is fast. Searching for a record with a
+specific rowid, or for all records with rowids within a specified range is
+around twice as fast as a similar search made by specifying any other PRIMARY
+KEY or indexed value.
+
+</p><p> With one exception noted below, if a rowid table has a primary key that consists
+of a single column and the declared type of that column is "INTEGER" in any mixture of
+upper and lower case, then the column becomes an alias for the rowid. Such a
+column is usually referred to as an "integer primary key". A PRIMARY KEY column
+only becomes an integer primary key if the declared type name is exactly
+"INTEGER".  Other integer type names like "INT" or "BIGINT" or "SHORT INTEGER"
+or "UNSIGNED INTEGER" causes the primary key column to behave as an ordinary
+table column with integer <a href="datatype3.html#affinity">affinity</a> and a unique index, not as an alias for
+the rowid.
+
+</p><p> The exception mentioned above is that if the declaration of a column with
+declared type "INTEGER" includes an "PRIMARY KEY DESC" clause, it does not
+become an alias for the rowid and is not classified as an integer primary key.
+This quirk is not by design. It is due to a bug in early versions of SQLite.
+But fixing the bug could result in backwards incompatibilities.
+Hence, the original behavior has been retained (and documented) because odd
+behavior in a corner case is far better than a compatibility break.  This means
+that the following three table declarations all cause the column "x" to be an
+alias for the rowid (an integer primary key):
+
+</p><ul>
+<li><tt>CREATE TABLE t(x INTEGER PRIMARY KEY ASC, y, z);</tt>
+</li><li><tt>CREATE TABLE t(x INTEGER, y, z, PRIMARY KEY(x ASC));</tt>
+</li><li><tt>CREATE TABLE t(x INTEGER, y, z, PRIMARY KEY(x DESC));</tt>
+</li></ul>
+
+<p>But the following declaration does not result in "x" being an alias for
+the rowid:
+</p><ul>
+<li><tt>CREATE TABLE t(x INTEGER PRIMARY KEY DESC, y, z);</tt>
+</li></ul>
+
+<p>Rowid values may be modified using an UPDATE statement in the same
+way as any other column value can, either using one of the built-in aliases
+("rowid", "oid" or "_rowid_") or by using an alias created by an integer
+primary key. Similarly, an INSERT statement may provide a value to use as the
+rowid for each row inserted. Unlike normal SQLite columns, an integer primary
+key or rowid column must contain integer values. Integer primary key or rowid
+columns are not able to hold floating point values, strings, BLOBs, or NULLs.
+
+</p><p>If an UPDATE statement attempts to set an integer primary key or rowid column
+to a NULL or blob value, or to a string or real value that cannot be losslessly
+converted to an integer, a "datatype mismatch" error occurs and the statement
+is aborted. If an INSERT statement attempts to insert a blob value, or a string
+or real value that cannot be losslessly converted to an integer into an
+integer primary key or rowid column, a "datatype mismatch" error occurs and the
+statement is aborted.
+
+</p><p>If an INSERT statement attempts to insert a NULL value into a rowid or
+integer primary key column, the system chooses an integer value to use as the
+rowid automatically. A detailed description of how this is done is provided
+<a href="autoinc.html">separately</a>.</p>
+
+<p>The <a href="foreignkeys.html#parentchild">parent key</a> of a <a href="foreignkeys.html">foreign key constraint</a> is not allowed to
+use the rowid.  The parent key must use named columns only.</p>
+<p align="center"><small><i>This page was last updated on 2025-04-30 20:02:34Z </small></i></p>
+

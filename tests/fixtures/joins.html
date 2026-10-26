@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><title>Joins fixture</title><script>alert("never executed")</script><style>p{color:red}</style></head>
+<body>
+<div class="menu mainmenu"><a href="/">Home</a> <a href="/docs">Docs</a></div>
+<div class="fancy_toc"><a href="#a">1. Inner joins</a></div>
+<h1><span>1. </span>Joining tables</h1>
+<p>A join combines rows from two tables. The <b>ON</b> clause gives the join constraint that decides which row pairs match.</p>
+<h2 id="a"><span>1.1. </span>INNER JOIN</h2>
+<p>An INNER JOIN keeps only the row pairs that satisfy the join constraint. Rows without a partner in the other table are dropped from the result.</p>
+<pre>
+SELECT c.name, o.id
+  FROM customers c
+  JOIN orders o ON o.customer_id = c.id;
+</pre>
+<h2><span>1.2. </span>LEFT JOIN</h2>
+<p>A LEFT JOIN, also called a LEFT OUTER JOIN, keeps every row of the left table. When no row of the right table matches, the columns of the right table are NULL in the result.</p>
+<p>Adding <code>WHERE o.id IS NULL</code> after a left outer join keeps only the left rows that have no match at all.</p>
+<p>select-stmt:</p>
+<table><tr><th>Join</th><th>Unmatched left rows</th></tr><tr><td>INNER JOIN</td><td>dropped</td></tr><tr><td>LEFT JOIN</td><td>kept, right side NULL</td></tr></table>
+<footer>Copyright footer text that must be removed</footer>
+</body></html>

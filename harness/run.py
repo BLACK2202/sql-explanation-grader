@@ -57,6 +57,12 @@ parser.add_argument(
     action="store_true",
     help="Disable automatic PDF report generation on completion.",
 )
+parser.add_argument(
+    "--legacy-judge-input",
+    action="store_true",
+    help="Reproduce the original judge input (SQL + explanation only, no schema). "
+    "By default the judge now also receives the database schema.",
+)
 args = parser.parse_args()
 
 for p, label in ((args.prompt_file, "prompt file"), (args.judge_prompt, "judge prompt")):
@@ -106,6 +112,19 @@ logger.info(
 # ---------------------------------------------------------------------------
 # Worker function
 # ---------------------------------------------------------------------------
+def judge_input(item: dict, explanation: str) -> str:
+    """User message for the judge.
+
+    Historical runs (results/full_*, v2_*, improved_*) gave the judge only the
+    SQL and the explanation, so it could not check column names or table
+    relationships. The judge now also sees the schema; --legacy-judge-input
+    restores the old message to reproduce historical numbers.
+    """
+    if args.legacy_judge_input:
+        return f"SQL:\n{item['sql']}\nExplanation:\n{explanation}"
+    return f"Schema:\n{item['schema']}\nSQL:\n{item['sql']}\nExplanation:\n{explanation}"
+
+
 def process_item(item: dict) -> dict:
     """Generate an explanation and grade it. Returns a result row."""
     try:
@@ -118,7 +137,7 @@ def process_item(item: dict) -> dict:
         v, m2 = call_json(
             JUDGE_MODEL,
             JUDGE,
-            f"SQL:\n{item['sql']}\nExplanation:\n{out.explanation}",
+            judge_input(item, out.explanation),
             Verdict,
         )
         return {
@@ -129,6 +148,7 @@ def process_item(item: dict) -> dict:
             "reason": v.reason,
             "sys_cost": m1,
             "judge_cost": m2,
+            "judge_saw_schema": not args.legacy_judge_input,
             "error": None,
         }
     except Exception as exc:

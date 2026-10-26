@@ -1,0 +1,885 @@
+{
+  "description": "LLM-judge agreement with reference labels. Positive class = good.",
+  "label_counts": {
+    "human": 0,
+    "ai_reference": 280
+  },
+  "sources": {
+    "human": {
+      "n_labels": 0,
+      "label_distribution": {},
+      "judges": {},
+      "hash_mismatches": 0,
+      "note": "no labels of this kind yet"
+    },
+    "ai_reference": {
+      "n_labels": 280,
+      "label_distribution": {
+        "bad": 187,
+        "good": 93
+      },
+      "judges": {
+        "rag_v4_dev/qwen2.5-3b__legacy": {
+          "n": 100,
+          "accuracy": 0.64,
+          "precision_good": 0.5,
+          "recall_good": 0.5277777777777778,
+          "f1_good": 0.5135135135135136,
+          "precision_bad": 0.7258064516129032,
+          "recall_bad": 0.703125,
+          "cohen_kappa": 0.228130360205832,
+          "confusion_matrix": {
+            "labels": [
+              "good",
+              "bad"
+            ],
+            "rows_true_cols_pred": [
+              [
+                19,
+                17
+              ],
+              [
+                19,
+                45
+              ]
+            ]
+          },
+          "tp": 19,
+          "tn": 45,
+          "fp": 19,
+          "fn": 17,
+          "by_condition": {
+            "baseline": {
+              "n": 50,
+              "accuracy": 0.56,
+              "precision_good": 0.45454545454545453,
+              "recall_good": 0.5,
+              "f1_good": 0.47619047619047616,
+              "precision_bad": 0.6428571428571429,
+              "recall_bad": 0.6,
+              "cohen_kappa": 0.09836065573770501,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    10,
+                    10
+                  ],
+                  [
+                    12,
+                    18
+                  ]
+                ]
+              },
+              "tp": 10,
+              "tn": 18,
+              "fp": 12,
+              "fn": 10
+            },
+            "rag": {
+              "n": 50,
+              "accuracy": 0.72,
+              "precision_good": 0.5625,
+              "recall_good": 0.5625,
+              "f1_good": 0.5625,
+              "precision_bad": 0.7941176470588235,
+              "recall_bad": 0.7941176470588235,
+              "cohen_kappa": 0.3566176470588234,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    9,
+                    7
+                  ],
+                  [
+                    7,
+                    27
+                  ]
+                ]
+              },
+              "tp": 9,
+              "tn": 27,
+              "fp": 7,
+              "fn": 7
+            }
+          },
+          "reference_good_rate": 0.36,
+          "judge_good_rate": 0.38
+        },
+        "rag_v4_dev/qwen2.5-3b__legacy_schema": {
+          "n": 100,
+          "accuracy": 0.62,
+          "precision_good": 0.46153846153846156,
+          "recall_good": 0.3333333333333333,
+          "f1_good": 0.3870967741935484,
+          "precision_bad": 0.6756756756756757,
+          "recall_bad": 0.78125,
+          "cohen_kappa": 0.12199630314232894,
+          "confusion_matrix": {
+            "labels": [
+              "good",
+              "bad"
+            ],
+            "rows_true_cols_pred": [
+              [
+                12,
+                24
+              ],
+              [
+                14,
+                50
+              ]
+            ]
+          },
+          "tp": 12,
+          "tn": 50,
+          "fp": 14,
+          "fn": 24,
+          "by_condition": {
+            "baseline": {
+              "n": 50,
+              "accuracy": 0.58,
+              "precision_good": 0.4666666666666667,
+              "recall_good": 0.35,
+              "f1_good": 0.4,
+              "precision_bad": 0.6285714285714286,
+              "recall_bad": 0.7333333333333333,
+              "cohen_kappa": 0.08695652173913028,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    7,
+                    13
+                  ],
+                  [
+                    8,
+                    22
+                  ]
+                ]
+              },
+              "tp": 7,
+              "tn": 22,
+              "fp": 8,
+              "fn": 13
+            },
+            "rag": {
+              "n": 50,
+              "accuracy": 0.66,
+              "precision_good": 0.45454545454545453,
+              "recall_good": 0.3125,
+              "f1_good": 0.3703703703703703,
+              "precision_bad": 0.717948717948718,
+              "recall_bad": 0.8235294117647058,
+              "cohen_kappa": 0.1482965931863726,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    5,
+                    11
+                  ],
+                  [
+                    6,
+                    28
+                  ]
+                ]
+              },
+              "tp": 5,
+              "tn": 28,
+              "fp": 6,
+              "fn": 11
+            }
+          },
+          "reference_good_rate": 0.36,
+          "judge_good_rate": 0.26
+        },
+        "rag_v4_dev/qwen2.5-3b__rubric": {
+          "n": 100,
+          "accuracy": 0.36,
+          "precision_good": 0.36,
+          "recall_good": 1.0,
+          "f1_good": 0.5294117647058824,
+          "precision_bad": null,
+          "recall_bad": 0.0,
+          "cohen_kappa": 0.0,
+          "confusion_matrix": {
+            "labels": [
+              "good",
+              "bad"
+            ],
+            "rows_true_cols_pred": [
+              [
+                36,
+                0
+              ],
+              [
+                64,
+                0
+              ]
+            ]
+          },
+          "tp": 36,
+          "tn": 0,
+          "fp": 64,
+          "fn": 0,
+          "by_condition": {
+            "baseline": {
+              "n": 50,
+              "accuracy": 0.4,
+              "precision_good": 0.4,
+              "recall_good": 1.0,
+              "f1_good": 0.5714285714285715,
+              "precision_bad": null,
+              "recall_bad": 0.0,
+              "cohen_kappa": 0.0,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    20,
+                    0
+                  ],
+                  [
+                    30,
+                    0
+                  ]
+                ]
+              },
+              "tp": 20,
+              "tn": 0,
+              "fp": 30,
+              "fn": 0
+            },
+            "rag": {
+              "n": 50,
+              "accuracy": 0.32,
+              "precision_good": 0.32,
+              "recall_good": 1.0,
+              "f1_good": 0.48484848484848486,
+              "precision_bad": null,
+              "recall_bad": 0.0,
+              "cohen_kappa": 0.0,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    16,
+                    0
+                  ],
+                  [
+                    34,
+                    0
+                  ]
+                ]
+              },
+              "tp": 16,
+              "tn": 0,
+              "fp": 34,
+              "fn": 0
+            }
+          },
+          "reference_good_rate": 0.36,
+          "judge_good_rate": 1.0
+        },
+        "rag_v4_test/qwen2.5-3b__legacy_schema": {
+          "n": 76,
+          "accuracy": 0.5526315789473685,
+          "precision_good": 0.2962962962962963,
+          "recall_good": 0.34782608695652173,
+          "f1_good": 0.31999999999999995,
+          "precision_bad": 0.6938775510204082,
+          "recall_bad": 0.6415094339622641,
+          "cohen_kappa": -0.01016419077404206,
+          "confusion_matrix": {
+            "labels": [
+              "good",
+              "bad"
+            ],
+            "rows_true_cols_pred": [
+              [
+                8,
+                15
+              ],
+              [
+                19,
+                34
+              ]
+            ]
+          },
+          "tp": 8,
+          "tn": 34,
+          "fp": 19,
+          "fn": 15,
+          "by_condition": {
+            "baseline": {
+              "n": 38,
+              "accuracy": 0.4473684210526316,
+              "precision_good": 0.26666666666666666,
+              "recall_good": 0.2857142857142857,
+              "f1_good": 0.2758620689655172,
+              "precision_bad": 0.5652173913043478,
+              "recall_bad": 0.5416666666666666,
+              "cohen_kappa": -0.17008797653958932,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    4,
+                    10
+                  ],
+                  [
+                    11,
+                    13
+                  ]
+                ]
+              },
+              "tp": 4,
+              "tn": 13,
+              "fp": 11,
+              "fn": 10
+            },
+            "rag": {
+              "n": 38,
+              "accuracy": 0.6578947368421053,
+              "precision_good": 0.3333333333333333,
+              "recall_good": 0.4444444444444444,
+              "f1_good": 0.380952380952381,
+              "precision_bad": 0.8076923076923077,
+              "recall_bad": 0.7241379310344828,
+              "cohen_kappa": 0.15120274914089366,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    4,
+                    5
+                  ],
+                  [
+                    8,
+                    21
+                  ]
+                ]
+              },
+              "tp": 4,
+              "tn": 21,
+              "fp": 8,
+              "fn": 5
+            }
+          },
+          "reference_good_rate": 0.3026315789473684,
+          "judge_good_rate": 0.35526315789473684
+        },
+        "rag_vs_baseline_dev/qwen2.5-3b__legacy": {
+          "n": 100,
+          "accuracy": 0.64,
+          "precision_good": 0.42105263157894735,
+          "recall_good": 0.5333333333333333,
+          "f1_good": 0.47058823529411764,
+          "precision_bad": 0.7741935483870968,
+          "recall_bad": 0.6857142857142857,
+          "cohen_kappa": 0.2035398230088495,
+          "confusion_matrix": {
+            "labels": [
+              "good",
+              "bad"
+            ],
+            "rows_true_cols_pred": [
+              [
+                16,
+                14
+              ],
+              [
+                22,
+                48
+              ]
+            ]
+          },
+          "tp": 16,
+          "tn": 48,
+          "fp": 22,
+          "fn": 14,
+          "by_condition": {
+            "baseline": {
+              "n": 50,
+              "accuracy": 0.6,
+              "precision_good": 0.5,
+              "recall_good": 0.6,
+              "f1_good": 0.5454545454545454,
+              "precision_bad": 0.6923076923076923,
+              "recall_bad": 0.6,
+              "cohen_kappa": 0.19354838709677413,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    12,
+                    8
+                  ],
+                  [
+                    12,
+                    18
+                  ]
+                ]
+              },
+              "tp": 12,
+              "tn": 18,
+              "fp": 12,
+              "fn": 8
+            },
+            "rag": {
+              "n": 50,
+              "accuracy": 0.68,
+              "precision_good": 0.2857142857142857,
+              "recall_good": 0.4,
+              "f1_good": 0.3333333333333333,
+              "precision_bad": 0.8333333333333334,
+              "recall_bad": 0.75,
+              "cohen_kappa": 0.13043478260869576,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    4,
+                    6
+                  ],
+                  [
+                    10,
+                    30
+                  ]
+                ]
+              },
+              "tp": 4,
+              "tn": 30,
+              "fp": 10,
+              "fn": 6
+            }
+          },
+          "reference_good_rate": 0.3,
+          "judge_good_rate": 0.38
+        },
+        "rag_vs_baseline_dev/qwen2.5-3b__legacy_schema": {
+          "n": 100,
+          "accuracy": 0.6,
+          "precision_good": 0.3076923076923077,
+          "recall_good": 0.26666666666666666,
+          "f1_good": 0.28571428571428575,
+          "precision_bad": 0.7027027027027027,
+          "recall_bad": 0.7428571428571429,
+          "cohen_kappa": 0.00990099009900991,
+          "confusion_matrix": {
+            "labels": [
+              "good",
+              "bad"
+            ],
+            "rows_true_cols_pred": [
+              [
+                8,
+                22
+              ],
+              [
+                18,
+                52
+              ]
+            ]
+          },
+          "tp": 8,
+          "tn": 52,
+          "fp": 18,
+          "fn": 22,
+          "by_condition": {
+            "baseline": {
+              "n": 50,
+              "accuracy": 0.58,
+              "precision_good": 0.4666666666666667,
+              "recall_good": 0.35,
+              "f1_good": 0.4,
+              "precision_bad": 0.6285714285714286,
+              "recall_bad": 0.7333333333333333,
+              "cohen_kappa": 0.08695652173913028,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    7,
+                    13
+                  ],
+                  [
+                    8,
+                    22
+                  ]
+                ]
+              },
+              "tp": 7,
+              "tn": 22,
+              "fp": 8,
+              "fn": 13
+            },
+            "rag": {
+              "n": 50,
+              "accuracy": 0.62,
+              "precision_good": 0.09090909090909091,
+              "recall_good": 0.1,
+              "f1_good": 0.09523809523809525,
+              "precision_bad": 0.7692307692307693,
+              "recall_bad": 0.75,
+              "cohen_kappa": -0.14457831325301257,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    1,
+                    9
+                  ],
+                  [
+                    10,
+                    30
+                  ]
+                ]
+              },
+              "tp": 1,
+              "tn": 30,
+              "fp": 10,
+              "fn": 9
+            }
+          },
+          "reference_good_rate": 0.3,
+          "judge_good_rate": 0.26
+        },
+        "rag_vs_baseline_dev/qwen2.5-3b__rubric": {
+          "n": 100,
+          "accuracy": 0.31,
+          "precision_good": 0.30303030303030304,
+          "recall_good": 1.0,
+          "f1_good": 0.4651162790697675,
+          "precision_bad": 1.0,
+          "recall_bad": 0.014285714285714285,
+          "cohen_kappa": 0.008620689655172422,
+          "confusion_matrix": {
+            "labels": [
+              "good",
+              "bad"
+            ],
+            "rows_true_cols_pred": [
+              [
+                30,
+                0
+              ],
+              [
+                69,
+                1
+              ]
+            ]
+          },
+          "tp": 30,
+          "tn": 1,
+          "fp": 69,
+          "fn": 0,
+          "by_condition": {
+            "baseline": {
+              "n": 50,
+              "accuracy": 0.4,
+              "precision_good": 0.4,
+              "recall_good": 1.0,
+              "f1_good": 0.5714285714285715,
+              "precision_bad": null,
+              "recall_bad": 0.0,
+              "cohen_kappa": 0.0,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    20,
+                    0
+                  ],
+                  [
+                    30,
+                    0
+                  ]
+                ]
+              },
+              "tp": 20,
+              "tn": 0,
+              "fp": 30,
+              "fn": 0
+            },
+            "rag": {
+              "n": 50,
+              "accuracy": 0.22,
+              "precision_good": 0.20408163265306123,
+              "recall_good": 1.0,
+              "f1_good": 0.3389830508474576,
+              "precision_bad": 1.0,
+              "recall_bad": 0.025,
+              "cohen_kappa": 0.010152284263959364,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    39,
+                    1
+                  ]
+                ]
+              },
+              "tp": 10,
+              "tn": 1,
+              "fp": 39,
+              "fn": 0
+            }
+          },
+          "reference_good_rate": 0.3,
+          "judge_good_rate": 0.99
+        },
+        "rag_vs_baseline_dev/qwen2.5-7b__rubric": {
+          "n": 100,
+          "accuracy": 0.57,
+          "precision_good": 0.4084507042253521,
+          "recall_good": 0.9666666666666667,
+          "f1_good": 0.5742574257425742,
+          "precision_bad": 0.9655172413793104,
+          "recall_bad": 0.4,
+          "cohen_kappa": 0.2636986301369862,
+          "confusion_matrix": {
+            "labels": [
+              "good",
+              "bad"
+            ],
+            "rows_true_cols_pred": [
+              [
+                29,
+                1
+              ],
+              [
+                42,
+                28
+              ]
+            ]
+          },
+          "tp": 29,
+          "tn": 28,
+          "fp": 42,
+          "fn": 1,
+          "by_condition": {
+            "baseline": {
+              "n": 50,
+              "accuracy": 0.58,
+              "precision_good": 0.4878048780487805,
+              "recall_good": 1.0,
+              "f1_good": 0.6557377049180327,
+              "precision_bad": 1.0,
+              "recall_bad": 0.3,
+              "cohen_kappa": 0.25531914893617014,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    20,
+                    0
+                  ],
+                  [
+                    21,
+                    9
+                  ]
+                ]
+              },
+              "tp": 20,
+              "tn": 9,
+              "fp": 21,
+              "fn": 0
+            },
+            "rag": {
+              "n": 50,
+              "accuracy": 0.56,
+              "precision_good": 0.3,
+              "recall_good": 0.9,
+              "f1_good": 0.45000000000000007,
+              "precision_bad": 0.95,
+              "recall_bad": 0.475,
+              "cohen_kappa": 0.2142857142857143,
+              "confusion_matrix": {
+                "labels": [
+                  "good",
+                  "bad"
+                ],
+                "rows_true_cols_pred": [
+                  [
+                    9,
+                    1
+                  ],
+                  [
+                    21,
+                    19
+                  ]
+                ]
+              },
+              "tp": 9,
+              "tn": 19,
+              "fp": 21,
+              "fn": 1
+            }
+          },
+          "reference_good_rate": 0.3,
+          "judge_good_rate": 0.71
+        }
+      },
+      "hash_mismatches": 0
+    }
+  },
+  "reference_comparison": {
+    "human": {},
+    "ai_reference": {
+      "rag_v4_dev": {
+        "conditions": {
+          "baseline": {
+            "good": 20,
+            "n": 50,
+            "rate": 0.4,
+            "ci95": [
+              0.2760818978624575,
+              0.5381881089724063
+            ]
+          },
+          "rag": {
+            "good": 16,
+            "n": 50,
+            "rate": 0.32,
+            "ci95": [
+              0.20758044093999403,
+              0.45810557136276076
+            ]
+          }
+        },
+        "n_pairs": 50,
+        "only_baseline_good": 14,
+        "only_rag_good": 10,
+        "both_good": 6,
+        "both_bad": 20,
+        "delta_rag_minus_baseline": {
+          "mean": -0.08,
+          "ci_low": -0.26,
+          "ci_high": 0.12,
+          "n": 50
+        },
+        "mcnemar_exact_p": 0.5412561893463135
+      },
+      "rag_v4_test": {
+        "conditions": {
+          "baseline": {
+            "good": 16,
+            "n": 40,
+            "rate": 0.4,
+            "ci95": [
+              0.2634811061240136,
+              0.5540438017260649
+            ]
+          },
+          "rag": {
+            "good": 11,
+            "n": 40,
+            "rate": 0.275,
+            "ci95": [
+              0.1610785343314309,
+              0.4283525083312457
+            ]
+          }
+        },
+        "n_pairs": 40,
+        "only_baseline_good": 9,
+        "only_rag_good": 4,
+        "both_good": 7,
+        "both_bad": 20,
+        "delta_rag_minus_baseline": {
+          "mean": -0.125,
+          "ci_low": -0.3,
+          "ci_high": 0.05,
+          "n": 40
+        },
+        "mcnemar_exact_p": 0.266845703125
+      },
+      "rag_vs_baseline_dev": {
+        "conditions": {
+          "baseline": {
+            "good": 20,
+            "n": 50,
+            "rate": 0.4,
+            "ci95": [
+              0.2760818978624575,
+              0.5381881089724063
+            ]
+          },
+          "rag": {
+            "good": 10,
+            "n": 50,
+            "rate": 0.2,
+            "ci95": [
+              0.11243629945973886,
+              0.3303737210448524
+            ]
+          }
+        },
+        "n_pairs": 50,
+        "only_baseline_good": 16,
+        "only_rag_good": 6,
+        "both_good": 4,
+        "both_bad": 24,
+        "delta_rag_minus_baseline": {
+          "mean": -0.2,
+          "ci_low": -0.38,
+          "ci_high": -0.02,
+          "n": 50
+        },
+        "mcnemar_exact_p": 0.052478790283203125
+      }
+    }
+  }
+}

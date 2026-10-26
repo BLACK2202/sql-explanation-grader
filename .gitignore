@@ -2,3 +2,11 @@
 .venv
 __pycache__
 .agents/
+
+# RAG extension
+rag_store/
+corpus/uploads/
+.hf_cache/
+.pytest_cache/
+.ruff_cache/
+results/rag/*.log

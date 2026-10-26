@@ -1,0 +1,884 @@
+{
+  "exp_id": "rag_vs_baseline_dev",
+  "judge_tag": "qwen2.5-3b__legacy",
+  "judge": {
+    "model": "qwen2.5:3b",
+    "mode": "legacy",
+    "evidence": "none",
+    "prompt_sha256_12": "d64efb3b7c7a",
+    "identity": {
+      "name": "qwen2.5:3b",
+      "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+      "size": 1929912432,
+      "parameter_size": "3.1B",
+      "quantization": "Q4_K_M"
+    }
+  },
+  "dataset": {
+    "split": "dev",
+    "file": "data\\dev.jsonl",
+    "sha256": "65bb0817d4b4f5a2e5aa2ad781147e1806a03c7a0bc2448b764c13d19548d9ec",
+    "n_items": 50
+  },
+  "generator": {
+    "model": "llama3.2:3b",
+    "provider": "ollama",
+    "identity": {
+      "name": "llama3.2:3b",
+      "digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
+      "size": 2019393189,
+      "parameter_size": "3.2B",
+      "quantization": "Q4_K_M"
+    },
+    "options": {
+      "temperature": 0.0,
+      "seed": 42,
+      "num_ctx": 8192,
+      "num_predict": 1024,
+      "num_gpu": 99
+    }
+  },
+  "label_provenance": {
+    "judge_approval": "LLM judge decision (unverified; not ground truth)",
+    "deterministic_checks": "rule-based heuristics computed from the SQL structure (no LLM)",
+    "grounding": "deterministic citation validation; lexical support is a heuristic",
+    "reference_labels": "see results/rag/judge_agreement.json; human and AI-assisted labels are reported separately"
+  },
+  "conditions": {
+    "baseline": {
+      "n_items": 50,
+      "generation_errors": 0,
+      "judge_errors": 0,
+      "n_judged": 50,
+      "n_abstained": 0,
+      "abstention_rate": {
+        "k": 0,
+        "n": 50,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.07135003417431873
+        ]
+      },
+      "judge_approval": {
+        "k": 24,
+        "n": 50,
+        "rate": 0.48,
+        "ci95": [
+          0.3479691239550571,
+          0.6148848774119157
+        ]
+      },
+      "judge_approval_itt": {
+        "k": 24,
+        "n": 50,
+        "rate": 0.48,
+        "ci95": [
+          0.3479691239550571,
+          0.6148848774119157
+        ]
+      },
+      "rubric_pass": null,
+      "grade_rubric_consistency": null,
+      "dimensions": {
+        "correctness": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "min": null,
+          "max": null
+        },
+        "completeness": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "min": null,
+          "max": null
+        },
+        "clarity": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "min": null,
+          "max": null
+        },
+        "groundedness": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "min": null,
+          "max": null
+        }
+      },
+      "unsupported_claims_per_explanation": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "min": null,
+        "max": null
+      },
+      "explanations_with_unsupported_claims": null,
+      "deterministic_checks": {
+        "coverage_score": {
+          "n": 50,
+          "mean": 0.960002,
+          "median": 1.0,
+          "min": 0.3333,
+          "max": 1.0
+        },
+        "per_check_pass_rate": {
+          "aggregate_avg": {
+            "k": 5,
+            "n": 5,
+            "rate": 1.0,
+            "ci95": [
+              0.5655085052479191,
+              1.0
+            ]
+          },
+          "aggregate_count": {
+            "k": 4,
+            "n": 5,
+            "rate": 0.8,
+            "ci95": [
+              0.3755282641185388,
+              0.9637768390302125
+            ]
+          },
+          "aggregate_max": {
+            "k": 1,
+            "n": 1,
+            "rate": 1.0,
+            "ci95": [
+              0.20654329147389294,
+              1.0
+            ]
+          },
+          "aggregate_sum": {
+            "k": 1,
+            "n": 1,
+            "rate": 1.0,
+            "ci95": [
+              0.20654329147389294,
+              1.0
+            ]
+          },
+          "grouping": {
+            "k": 8,
+            "n": 8,
+            "rate": 1.0,
+            "ci95": [
+              0.6755843804891231,
+              1.0
+            ]
+          },
+          "limit_value": {
+            "k": 6,
+            "n": 8,
+            "rate": 0.75,
+            "ci95": [
+              0.40926987910258916,
+              0.9285223111419724
+            ]
+          },
+          "null_filter": {
+            "k": 3,
+            "n": 3,
+            "rate": 1.0,
+            "ci95": [
+              0.43849391955098227,
+              1.0
+            ]
+          },
+          "order_direction": {
+            "k": 7,
+            "n": 8,
+            "rate": 0.875,
+            "ci95": [
+              0.5291051942301386,
+              0.9775830911367038
+            ]
+          },
+          "tables": {
+            "k": 48,
+            "n": 50,
+            "rate": 0.96,
+            "ci95": [
+              0.8653966212204534,
+              0.9889613473391734
+            ]
+          },
+          "window_ranking": {
+            "k": 7,
+            "n": 7,
+            "rate": 1.0,
+            "ci95": [
+              0.6456611570247934,
+              1.0
+            ]
+          }
+        },
+        "explanations_with_invented_numbers": {
+          "k": 5,
+          "n": 50,
+          "rate": 0.1,
+          "ci95": [
+            0.04347512399157111,
+            0.2136049033478839
+          ]
+        },
+        "explanations_with_sql_keyword_leaks": {
+          "k": 5,
+          "n": 50,
+          "rate": 0.1,
+          "ci95": [
+            0.04347512399157111,
+            0.2136049033478839
+          ]
+        }
+      },
+      "latency_s": {
+        "retrieval": {
+          "n": 50,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "generation": {
+          "n": 50,
+          "mean": 6.5592,
+          "median": 5.275,
+          "min": 1.87,
+          "max": 31.23
+        },
+        "end_to_end": {
+          "n": 50,
+          "mean": 6.56114,
+          "median": 5.274,
+          "min": 1.868,
+          "max": 31.229
+        },
+        "judge": {
+          "n": 50,
+          "mean": 1.303,
+          "median": 1.185,
+          "min": 0.8,
+          "max": 3.59
+        }
+      },
+      "tokens": {
+        "input": {
+          "n": 50,
+          "mean": 571.12,
+          "median": 567.0,
+          "min": 547,
+          "max": 599
+        },
+        "output": {
+          "n": 50,
+          "mean": 103.66,
+          "median": 99.0,
+          "min": 30,
+          "max": 171
+        },
+        "context": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "min": null,
+          "max": null
+        }
+      },
+      "explanation_words": {
+        "n": 50,
+        "mean": 82.76,
+        "median": 79.5,
+        "min": 22,
+        "max": 138
+      },
+      "grounding_status": {
+        "not_applicable": 50
+      }
+    },
+    "rag": {
+      "n_items": 50,
+      "generation_errors": 0,
+      "judge_errors": 0,
+      "n_judged": 50,
+      "n_abstained": 0,
+      "abstention_rate": {
+        "k": 0,
+        "n": 50,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.07135003417431873
+        ]
+      },
+      "judge_approval": {
+        "k": 14,
+        "n": 50,
+        "rate": 0.28,
+        "ci95": [
+          0.17474014357680362,
+          0.4166538714598967
+        ]
+      },
+      "judge_approval_itt": {
+        "k": 14,
+        "n": 50,
+        "rate": 0.28,
+        "ci95": [
+          0.17474014357680362,
+          0.4166538714598967
+        ]
+      },
+      "rubric_pass": null,
+      "grade_rubric_consistency": null,
+      "dimensions": {
+        "correctness": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "min": null,
+          "max": null
+        },
+        "completeness": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "min": null,
+          "max": null
+        },
+        "clarity": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "min": null,
+          "max": null
+        },
+        "groundedness": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "min": null,
+          "max": null
+        }
+      },
+      "unsupported_claims_per_explanation": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "min": null,
+        "max": null
+      },
+      "explanations_with_unsupported_claims": null,
+      "deterministic_checks": {
+        "coverage_score": {
+          "n": 50,
+          "mean": 0.980002,
+          "median": 1.0,
+          "min": 0.6667,
+          "max": 1.0
+        },
+        "per_check_pass_rate": {
+          "aggregate_avg": {
+            "k": 5,
+            "n": 5,
+            "rate": 1.0,
+            "ci95": [
+              0.5655085052479191,
+              1.0
+            ]
+          },
+          "aggregate_count": {
+            "k": 5,
+            "n": 5,
+            "rate": 1.0,
+            "ci95": [
+              0.5655085052479191,
+              1.0
+            ]
+          },
+          "aggregate_max": {
+            "k": 1,
+            "n": 1,
+            "rate": 1.0,
+            "ci95": [
+              0.20654329147389294,
+              1.0
+            ]
+          },
+          "aggregate_sum": {
+            "k": 1,
+            "n": 1,
+            "rate": 1.0,
+            "ci95": [
+              0.20654329147389294,
+              1.0
+            ]
+          },
+          "grouping": {
+            "k": 8,
+            "n": 8,
+            "rate": 1.0,
+            "ci95": [
+              0.6755843804891231,
+              1.0
+            ]
+          },
+          "limit_value": {
+            "k": 8,
+            "n": 8,
+            "rate": 1.0,
+            "ci95": [
+              0.6755843804891231,
+              1.0
+            ]
+          },
+          "null_filter": {
+            "k": 3,
+            "n": 3,
+            "rate": 1.0,
+            "ci95": [
+              0.43849391955098227,
+              1.0
+            ]
+          },
+          "order_direction": {
+            "k": 8,
+            "n": 8,
+            "rate": 1.0,
+            "ci95": [
+              0.6755843804891231,
+              1.0
+            ]
+          },
+          "tables": {
+            "k": 47,
+            "n": 50,
+            "rate": 0.94,
+            "ci95": [
+              0.8378265662912299,
+              0.9793854036353695
+            ]
+          },
+          "window_ranking": {
+            "k": 7,
+            "n": 7,
+            "rate": 1.0,
+            "ci95": [
+              0.6456611570247934,
+              1.0
+            ]
+          }
+        },
+        "explanations_with_invented_numbers": {
+          "k": 6,
+          "n": 50,
+          "rate": 0.12,
+          "ci95": [
+            0.05617523710624646,
+            0.23805078886623582
+          ]
+        },
+        "explanations_with_sql_keyword_leaks": {
+          "k": 33,
+          "n": 50,
+          "rate": 0.66,
+          "ci95": [
+            0.5215356854148285,
+            0.7756323036493895
+          ]
+        }
+      },
+      "latency_s": {
+        "retrieval": {
+          "n": 50,
+          "mean": 1.494504,
+          "median": 0.9982,
+          "min": 0.0606,
+          "max": 12.534
+        },
+        "generation": {
+          "n": 50,
+          "mean": 15.9878,
+          "median": 11.934999999999999,
+          "min": 4.76,
+          "max": 50.94
+        },
+        "end_to_end": {
+          "n": 50,
+          "mean": 17.49812,
+          "median": 13.489,
+          "min": 4.97,
+          "max": 53.354
+        },
+        "judge": {
+          "n": 50,
+          "mean": 1.3268,
+          "median": 1.19,
+          "min": 0.78,
+          "max": 2.73
+        }
+      },
+      "tokens": {
+        "input": {
+          "n": 50,
+          "mean": 2646.96,
+          "median": 2641.5,
+          "min": 2438,
+          "max": 2952
+        },
+        "output": {
+          "n": 50,
+          "mean": 266.22,
+          "median": 229.0,
+          "min": 110,
+          "max": 680
+        },
+        "context": {
+          "n": 50,
+          "mean": 1451.4,
+          "median": 1459.0,
+          "min": 1256,
+          "max": 1715
+        }
+      },
+      "explanation_words": {
+        "n": 50,
+        "mean": 101.38,
+        "median": 78.0,
+        "min": 30,
+        "max": 314
+      },
+      "grounding_status": {
+        "grounded": 45,
+        "weakly_grounded": 5
+      },
+      "grounding": {
+        "answers_with_any_citation": {
+          "k": 45,
+          "n": 50,
+          "rate": 0.9,
+          "ci95": [
+            0.7863950966521162,
+            0.956524876008429
+          ]
+        },
+        "citation_validity": {
+          "n": 45,
+          "mean": 1.0,
+          "median": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "answers_with_invalid_citation": {
+          "k": 0,
+          "n": 50,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.07135003417431873
+          ]
+        },
+        "cited_sentence_share": {
+          "n": 50,
+          "mean": 0.44673898650369237,
+          "median": 0.3333333333333333,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "lexical_claim_support_rate": {
+          "n": 45,
+          "mean": 0.8056888888888889,
+          "median": 1.0,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "model_reported_insufficient": 0
+      },
+      "retrieval": {
+        "feature_coverage": {
+          "n": 50,
+          "mean": 1.0,
+          "median": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "evidence_sufficient": {
+          "k": 50,
+          "n": 50,
+          "rate": 1.0,
+          "ci95": [
+            0.9286499658256813,
+            1.0
+          ]
+        },
+        "chunks_per_query": {
+          "n": 50,
+          "mean": 6,
+          "median": 6.0,
+          "min": 6,
+          "max": 6
+        },
+        "missing_features": {}
+      }
+    }
+  },
+  "paired": {
+    "n_pairs": 50,
+    "outcomes": {
+      "both_bad": 22,
+      "only_baseline_good": 14,
+      "only_rag_good": 4,
+      "both_good": 10
+    },
+    "approval_delta_rag_minus_baseline": {
+      "mean": -0.2,
+      "ci_low": -0.36,
+      "ci_high": -0.04,
+      "n": 50
+    },
+    "mcnemar_exact_p": 0.0308837890625,
+    "dimension_deltas": {
+      "correctness": null,
+      "completeness": null,
+      "clarity": null,
+      "groundedness": null
+    },
+    "check_coverage_delta": {
+      "mean": 0.020000000000000004,
+      "ci_low": -0.013332000000000002,
+      "ci_high": 0.060000000000000005,
+      "n": 50
+    }
+  },
+  "by_feature": {
+    "GROUP BY with HAVING": {
+      "baseline": {
+        "n": 8,
+        "approval": {
+          "k": 4,
+          "n": 8,
+          "rate": 0.5,
+          "ci95": [
+            0.21521252682444186,
+            0.7847874731755582
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 0.8750125
+      },
+      "rag": {
+        "n": 8,
+        "approval": {
+          "k": 5,
+          "n": 8,
+          "rate": 0.625,
+          "ci95": [
+            0.30573785458380187,
+            0.863158240538479
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 0.8750125
+      }
+    },
+    "INNER JOIN of two tables": {
+      "baseline": {
+        "n": 9,
+        "approval": {
+          "k": 5,
+          "n": 9,
+          "rate": 0.5555555555555556,
+          "ci95": [
+            0.2666473457440297,
+            0.811224570528086
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 1.0
+      },
+      "rag": {
+        "n": 9,
+        "approval": {
+          "k": 2,
+          "n": 9,
+          "rate": 0.2222222222222222,
+          "ci95": [
+            0.06322376231222723,
+            0.5474166563271946
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 1.0
+      }
+    },
+    "JOIN of three tables with ORDER BY and LIMIT": {
+      "baseline": {
+        "n": 8,
+        "approval": {
+          "k": 5,
+          "n": 8,
+          "rate": 0.625,
+          "ci95": [
+            0.30573785458380187,
+            0.863158240538479
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 0.875
+      },
+      "rag": {
+        "n": 8,
+        "approval": {
+          "k": 2,
+          "n": 8,
+          "rate": 0.25,
+          "ci95": [
+            0.07147768885802763,
+            0.5907301208974108
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 1.0
+      }
+    },
+    "LEFT JOIN with IS NULL filter": {
+      "baseline": {
+        "n": 3,
+        "approval": {
+          "k": 3,
+          "n": 3,
+          "rate": 1.0,
+          "ci95": [
+            0.43849391955098227,
+            1.0
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 1.0
+      },
+      "rag": {
+        "n": 3,
+        "approval": {
+          "k": 2,
+          "n": 3,
+          "rate": 0.6666666666666666,
+          "ci95": [
+            0.2076549551264879,
+            0.9385096847238394
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 1.0
+      }
+    },
+    "simple SELECT with WHERE": {
+      "baseline": {
+        "n": 5,
+        "approval": {
+          "k": 2,
+          "n": 5,
+          "rate": 0.4,
+          "ci95": [
+            0.1176182311592533,
+            0.769280067791163
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 1.0
+      },
+      "rag": {
+        "n": 5,
+        "approval": {
+          "k": 0,
+          "n": 5,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.43449149475208104
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 1.0
+      }
+    },
+    "subquery in WHERE": {
+      "baseline": {
+        "n": 10,
+        "approval": {
+          "k": 4,
+          "n": 10,
+          "rate": 0.4,
+          "ci95": [
+            0.16817758120350967,
+            0.6873304525498135
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 1.0
+      },
+      "rag": {
+        "n": 10,
+        "approval": {
+          "k": 3,
+          "n": 10,
+          "rate": 0.3,
+          "ci95": [
+            0.10778928748621183,
+            0.6032267800204347
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 1.0
+      }
+    },
+    "window function such as ROW_NUMBER or RANK": {
+      "baseline": {
+        "n": 7,
+        "approval": {
+          "k": 1,
+          "n": 7,
+          "rate": 0.14285714285714285,
+          "ci95": [
+            0.02567895594897479,
+            0.51313450331903
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 1.0
+      },
+      "rag": {
+        "n": 7,
+        "approval": {
+          "k": 0,
+          "n": 7,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.35433884297520657
+          ]
+        },
+        "abstained": 0,
+        "mean_correctness": null,
+        "check_coverage": 1.0
+      }
+    }
+  }
+}

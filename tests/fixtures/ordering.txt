@@ -1,0 +1,5 @@
+The ORDER BY clause sorts the rows that a query returns. ASC sorts in ascending order and is the default. DESC sorts in descending order, so the largest values come first.
+
+The LIMIT clause places an upper bound on the number of rows returned. LIMIT 5 returns at most five rows. With OFFSET, the first rows are skipped before rows are returned.
+
+    SELECT name FROM products ORDER BY price DESC LIMIT 5;

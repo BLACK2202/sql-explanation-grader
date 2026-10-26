@@ -1,0 +1,195 @@
+{
+  "manifest_version": 1,
+  "description": "Curated SQL knowledge corpus for the RAG-enhanced SQL Explanation Grader. Every entry records where the text came from and the terms under which it may be reused. Raw copies live in corpus/raw (ingested by default) and corpus/extra (kept for the ingestion demo, not ingested by default).",
+  "licenses": {
+    "sqlite-public-domain": {
+      "name": "Public domain (SQLite)",
+      "url": "https://www.sqlite.org/copyright.html",
+      "terms": "All of the code and documentation in SQLite has been dedicated to the public domain by the authors."
+    },
+    "postgresql-license": {
+      "name": "PostgreSQL License",
+      "url": "https://www.postgresql.org/docs/17/legalnotice.html",
+      "terms": "Permission to use, copy, modify, and distribute this documentation for any purpose, without fee, is granted provided the copyright notice and the license paragraphs appear in all copies. See corpus/LICENSES.md."
+    }
+  },
+  "documents": [
+    {
+      "doc_id": "sqlite-select",
+      "title": "SQLite: The SELECT statement",
+      "url": "https://www.sqlite.org/lang_select.html",
+      "license": "sqlite-public-domain",
+      "doc_type": "official_reference",
+      "dialect": "sqlite",
+      "categories": ["select", "where", "join", "group_by", "having", "distinct", "order_by", "limit", "compound", "aggregate"],
+      "path": "corpus/raw/sqlite-select.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "sqlite-with",
+      "title": "SQLite: The WITH clause (common table expressions)",
+      "url": "https://www.sqlite.org/lang_with.html",
+      "license": "sqlite-public-domain",
+      "doc_type": "official_reference",
+      "dialect": "sqlite",
+      "categories": ["cte", "recursive_cte"],
+      "path": "corpus/raw/sqlite-with.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "sqlite-window",
+      "title": "SQLite: Window functions",
+      "url": "https://www.sqlite.org/windowfunctions.html",
+      "license": "sqlite-public-domain",
+      "doc_type": "official_reference",
+      "dialect": "sqlite",
+      "categories": ["window", "ranking", "partition_by", "aggregate"],
+      "path": "corpus/raw/sqlite-window.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "sqlite-aggfunc",
+      "title": "SQLite: Built-in aggregate functions",
+      "url": "https://www.sqlite.org/lang_aggfunc.html",
+      "license": "sqlite-public-domain",
+      "doc_type": "official_reference",
+      "dialect": "sqlite",
+      "categories": ["aggregate"],
+      "path": "corpus/raw/sqlite-aggfunc.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "sqlite-expr",
+      "title": "SQLite: SQL language expressions",
+      "url": "https://www.sqlite.org/lang_expr.html",
+      "license": "sqlite-public-domain",
+      "doc_type": "official_reference",
+      "dialect": "sqlite",
+      "categories": ["case", "in", "exists", "between", "like", "null", "subquery", "operators"],
+      "path": "corpus/raw/sqlite-expr.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "sqlite-corefunc",
+      "title": "SQLite: Built-in scalar SQL functions",
+      "url": "https://www.sqlite.org/lang_corefunc.html",
+      "license": "sqlite-public-domain",
+      "doc_type": "official_reference",
+      "dialect": "sqlite",
+      "categories": ["scalar_function"],
+      "path": "corpus/raw/sqlite-corefunc.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "sqlite-datefunc",
+      "title": "SQLite: Date and time functions",
+      "url": "https://www.sqlite.org/lang_datefunc.html",
+      "license": "sqlite-public-domain",
+      "doc_type": "official_reference",
+      "dialect": "sqlite",
+      "categories": ["date_function"],
+      "path": "corpus/raw/sqlite-datefunc.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "sqlite-nulls",
+      "title": "SQLite: NULL handling in SQLite versus other database engines",
+      "url": "https://www.sqlite.org/nulls.html",
+      "license": "sqlite-public-domain",
+      "doc_type": "official_reference",
+      "dialect": "sqlite",
+      "categories": ["null", "distinct", "aggregate"],
+      "path": "corpus/raw/sqlite-nulls.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "sqlite-datatypes",
+      "title": "SQLite: Datatypes in SQLite (type affinity and comparison)",
+      "url": "https://www.sqlite.org/datatype3.html",
+      "license": "sqlite-public-domain",
+      "doc_type": "official_reference",
+      "dialect": "sqlite",
+      "categories": ["datatypes", "comparison", "collation"],
+      "path": "corpus/raw/sqlite-datatypes.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "sqlite-createtable",
+      "title": "SQLite: CREATE TABLE (schema definitions, keys and constraints)",
+      "url": "https://www.sqlite.org/lang_createtable.html",
+      "license": "sqlite-public-domain",
+      "doc_type": "official_reference",
+      "dialect": "sqlite",
+      "categories": ["schema"],
+      "path": "corpus/raw/sqlite-createtable.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "pg-tutorial-select",
+      "title": "PostgreSQL tutorial: Querying a table",
+      "url": "https://www.postgresql.org/docs/17/tutorial-select.html",
+      "license": "postgresql-license",
+      "doc_type": "tutorial",
+      "dialect": "postgresql",
+      "categories": ["select", "where", "order_by", "distinct"],
+      "path": "corpus/raw/pg-tutorial-select.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "pg-tutorial-join",
+      "title": "PostgreSQL tutorial: Joins between tables",
+      "url": "https://www.postgresql.org/docs/17/tutorial-join.html",
+      "license": "postgresql-license",
+      "doc_type": "tutorial",
+      "dialect": "postgresql",
+      "categories": ["join", "outer_join", "self_join"],
+      "path": "corpus/raw/pg-tutorial-join.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "pg-tutorial-agg",
+      "title": "PostgreSQL tutorial: Aggregate functions",
+      "url": "https://www.postgresql.org/docs/17/tutorial-agg.html",
+      "license": "postgresql-license",
+      "doc_type": "tutorial",
+      "dialect": "postgresql",
+      "categories": ["aggregate", "group_by", "having", "subquery"],
+      "path": "corpus/raw/pg-tutorial-agg.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "pg-tutorial-window",
+      "title": "PostgreSQL tutorial: Window functions",
+      "url": "https://www.postgresql.org/docs/17/tutorial-window.html",
+      "license": "postgresql-license",
+      "doc_type": "tutorial",
+      "dialect": "postgresql",
+      "categories": ["window", "ranking", "partition_by"],
+      "path": "corpus/raw/pg-tutorial-window.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "pg-subquery-expressions",
+      "title": "PostgreSQL: Subquery expressions (EXISTS, IN, NOT IN, ANY, ALL)",
+      "url": "https://www.postgresql.org/docs/17/functions-subquery.html",
+      "license": "postgresql-license",
+      "doc_type": "official_reference",
+      "dialect": "postgresql",
+      "categories": ["subquery", "exists", "in"],
+      "path": "corpus/raw/pg-subquery-expressions.html",
+      "ingest_by_default": true
+    },
+    {
+      "doc_id": "sqlite-json",
+      "title": "SQLite: JSON functions and operators",
+      "url": "https://www.sqlite.org/json1.html",
+      "license": "sqlite-public-domain",
+      "doc_type": "official_reference",
+      "dialect": "sqlite",
+      "categories": ["json_function"],
+      "path": "corpus/extra/sqlite-json.html",
+      "ingest_by_default": false,
+      "note": "Deliberately left out of the default index so the abstention demo has an uncovered feature. Ingest it from the Knowledge Base page (or `python -m sqlrag ingest --doc sqlite-json`) to see JSON queries become answerable."
+    }
+  ]
+}

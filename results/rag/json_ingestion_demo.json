@@ -1,0 +1,78 @@
+{
+  "ingest": {
+    "added": [
+      "sqlite-json"
+    ],
+    "chunks_written": 58,
+    "seconds": 8.86
+  },
+  "before_sufficient": {
+    "p00": false,
+    "p01": false,
+    "p02": false,
+    "p03": false,
+    "p04": false
+  },
+  "after": {
+    "p00": {
+      "sufficient": true,
+      "missing": [],
+      "docs": [
+        "sqlite-json",
+        "sqlite-json",
+        "sqlite-json",
+        "sqlite-json",
+        "sqlite-json",
+        "sqlite-json"
+      ]
+    },
+    "p01": {
+      "sufficient": true,
+      "missing": [],
+      "docs": [
+        "sqlite-json",
+        "sqlite-json",
+        "sqlite-json",
+        "sqlite-select",
+        "sqlite-json",
+        "sqlite-json"
+      ]
+    },
+    "p02": {
+      "sufficient": true,
+      "missing": [],
+      "docs": [
+        "sqlite-json",
+        "sqlite-select",
+        "sqlite-select",
+        "sqlite-select",
+        "sqlite-select",
+        "sqlite-aggfunc"
+      ]
+    },
+    "p03": {
+      "sufficient": true,
+      "missing": [],
+      "docs": [
+        "sqlite-json",
+        "sqlite-json",
+        "sqlite-select",
+        "sqlite-select",
+        "sqlite-json",
+        "sqlite-json"
+      ]
+    },
+    "p04": {
+      "sufficient": true,
+      "missing": [],
+      "docs": [
+        "sqlite-json",
+        "sqlite-json",
+        "sqlite-select",
+        "sqlite-select",
+        "sqlite-select",
+        "sqlite-aggfunc"
+      ]
+    }
+  }
+}

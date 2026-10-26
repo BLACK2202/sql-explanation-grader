@@ -11,6 +11,12 @@ import json
 import pathlib
 import sys
 
+# The report uses box-drawing characters. When output is redirected on Windows
+# the console code page (cp1252) cannot encode them and the script used to crash
+# with UnicodeEncodeError. Write UTF-8 instead.
+if hasattr(sys.stdout, "reconfigure") and (sys.stdout.encoding or "").lower().replace("-", "") != "utf8":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 RESET  = "\033[0m"
 BOLD   = "\033[1m"
 GREEN  = "\033[32m"

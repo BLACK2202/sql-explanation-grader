@@ -1,0 +1,159 @@
+{
+  "exp_id": "rag_v4_dev",
+  "created_at": "2026-10-26T15:02:25+00:00",
+  "updated_at": "2026-10-26T15:02:25+00:00",
+  "research_question": "Does retrieval augmentation improve the correctness, completeness and reliability of LLM-generated SQL explanations compared with the prompt-only baseline?",
+  "dataset": {
+    "split": "dev",
+    "file": "data\\dev.jsonl",
+    "sha256": "65bb0817d4b4f5a2e5aa2ad781147e1806a03c7a0bc2448b764c13d19548d9ec",
+    "n_items": 50
+  },
+  "conditions": {
+    "baseline": {
+      "prompt": "v2.md",
+      "prompt_sha256_12": "0bd6b691a535",
+      "retrieval": false,
+      "reused_from": "rag_vs_baseline_dev (identical prompt, model, options and items; generations and 3B/7B baseline judgments copied, not regenerated)"
+    },
+    "rag": {
+      "prompt": "v4_rag.md",
+      "prompt_sha256_12": "1040963cab26",
+      "retrieval": true,
+      "grounding_policy": "abstain",
+      "variant": "v4 focused: prompts/v4_rag.md, top_k=4, max_context_tokens=1200, fill_context=False (one covering passage per feature)"
+    }
+  },
+  "generator": {
+    "model": "llama3.2:3b",
+    "provider": "ollama",
+    "identity": {
+      "name": "llama3.2:3b",
+      "digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
+      "size": 2019393189,
+      "parameter_size": "3.2B",
+      "quantization": "Q4_K_M"
+    },
+    "options": {
+      "temperature": 0.0,
+      "seed": 42,
+      "num_ctx": 8192,
+      "num_predict": 1024,
+      "num_gpu": 99
+    }
+  },
+  "retrieval": {
+    "mode": "hybrid",
+    "top_k": 4,
+    "candidates": 20,
+    "per_query_k": 0,
+    "rrf_k": 60,
+    "min_similarity": 0.45,
+    "max_context_tokens": 1200,
+    "fill_context": false,
+    "embedding_backend": "sentence-transformers",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "chunk_size": 300,
+    "chunk_overlap": 60,
+    "grounding_policy": "abstain",
+    "min_feature_coverage": 1.0,
+    "collection": "sql_docs__baai-bge-small-en-v1.5-c300",
+    "index_stats": {
+      "collection": "sql_docs__baai-bge-small-en-v1.5-c300",
+      "embedding_model": "BAAI/bge-small-en-v1.5",
+      "embedding_dimension": 384,
+      "embedding_max_seq_length": 512,
+      "chunking": {
+        "chunk_size": 300,
+        "overlap": 60,
+        "min_chunk_tokens": 60,
+        "fingerprint": "a756d75bed8f"
+      },
+      "documents_indexed": 15,
+      "documents_failed": 0,
+      "documents_duplicate": 0,
+      "chunks": 263,
+      "chunks_in_vector_store": 263,
+      "avg_chunk_tokens": 235.9,
+      "max_chunk_tokens": 332,
+      "chunks_over_embedding_window": 0,
+      "updated_at": "2026-10-26T14:11:42+00:00"
+    }
+  },
+  "seed": 42,
+  "environment": {
+    "python": "3.11.17",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "machine": "AMD64",
+    "packages": {
+      "ollama": "0.6.3",
+      "chromadb": "1.5.9",
+      "sentence-transformers": "5.7.0",
+      "torch": "2.7.1+cpu",
+      "sqlglot": "30.24.0",
+      "pydantic": "2.14.1",
+      "fastapi": "0.162.0"
+    },
+    "git_commit": "a8fcb81687da2f048b1d0fc0be20eaf6888058fc"
+  },
+  "limit": null,
+  "conditions_run": [
+    "rag"
+  ],
+  "motivation": "Designed after error analysis of rag_vs_baseline_dev: v3 RAG answers copied general documentation (cartesian product, compound SELECT, column counts) into explanations. v4 limits the context to feature-covering passages and adds source-usage rules only (no new SQL facts in the prompt).",
+  "judges": {
+    "qwen2.5-3b__rubric": {
+      "model": "qwen2.5:3b",
+      "mode": "rubric",
+      "evidence": "none",
+      "prompt_sha256_12": "0821c0b38289",
+      "identity": {
+        "name": "qwen2.5:3b",
+        "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "size": 1929912432,
+        "parameter_size": "3.1B",
+        "quantization": "Q4_K_M"
+      }
+    },
+    "qwen2.5-3b__legacy_schema": {
+      "model": "qwen2.5:3b",
+      "mode": "legacy_schema",
+      "evidence": "none",
+      "prompt_sha256_12": "d64efb3b7c7a",
+      "options": {
+        "temperature": 0.0,
+        "seed": 42,
+        "num_ctx": 8192,
+        "num_predict": 1024,
+        "num_gpu": 99
+      },
+      "identity": {
+        "name": "qwen2.5:3b",
+        "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "size": 1929912432,
+        "parameter_size": "3.1B",
+        "quantization": "Q4_K_M"
+      }
+    },
+    "qwen2.5-3b__legacy": {
+      "model": "qwen2.5:3b",
+      "mode": "legacy",
+      "evidence": "none",
+      "prompt_sha256_12": "d64efb3b7c7a",
+      "options": {
+        "temperature": 0.0,
+        "seed": 42,
+        "num_ctx": 8192,
+        "num_predict": 1024,
+        "num_gpu": 99
+      },
+      "identity": {
+        "name": "qwen2.5:3b",
+        "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "size": 1929912432,
+        "parameter_size": "3.1B",
+        "quantization": "Q4_K_M"
+      }
+    }
+  }
+}

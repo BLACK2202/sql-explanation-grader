@@ -1,0 +1,117 @@
+{
+  "exp_id": "abstention_probe",
+  "created_at": "2026-10-26T14:56:24+00:00",
+  "updated_at": "2026-10-26T14:56:24+00:00",
+  "research_question": "Does retrieval augmentation improve the correctness, completeness and reliability of LLM-generated SQL explanations compared with the prompt-only baseline?",
+  "dataset": {
+    "split": "abstention_probe",
+    "file": "data\\abstention_probe.jsonl",
+    "sha256": "12d42030d6bc0016fa6ce9b33e215987d7bc38cd0da074ef62f5370500c8f93f",
+    "n_items": 20
+  },
+  "conditions": {
+    "baseline": {
+      "prompt": "v2.md",
+      "prompt_sha256_12": "0bd6b691a535",
+      "retrieval": false
+    },
+    "rag": {
+      "prompt": "v3_rag.md",
+      "prompt_sha256_12": "7ff16974fa1e",
+      "retrieval": true,
+      "grounding_policy": "abstain"
+    }
+  },
+  "generator": {
+    "model": "llama3.2:3b",
+    "provider": "ollama",
+    "identity": {
+      "name": "llama3.2:3b",
+      "digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
+      "size": 2019393189,
+      "parameter_size": "3.2B",
+      "quantization": "Q4_K_M"
+    },
+    "options": {
+      "temperature": 0.0,
+      "seed": 42,
+      "num_ctx": 8192,
+      "num_predict": 1024,
+      "num_gpu": 99
+    }
+  },
+  "retrieval": {
+    "mode": "hybrid",
+    "top_k": 6,
+    "candidates": 20,
+    "per_query_k": 0,
+    "rrf_k": 60,
+    "min_similarity": 0.45,
+    "max_context_tokens": 1800,
+    "fill_context": true,
+    "embedding_backend": "sentence-transformers",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "chunk_size": 300,
+    "chunk_overlap": 60,
+    "grounding_policy": "abstain",
+    "min_feature_coverage": 1.0,
+    "collection": "sql_docs__baai-bge-small-en-v1.5-c300",
+    "index_stats": {
+      "collection": "sql_docs__baai-bge-small-en-v1.5-c300",
+      "embedding_model": "BAAI/bge-small-en-v1.5",
+      "embedding_dimension": 384,
+      "embedding_max_seq_length": 512,
+      "chunking": {
+        "chunk_size": 300,
+        "overlap": 60,
+        "min_chunk_tokens": 60,
+        "fingerprint": "a756d75bed8f"
+      },
+      "documents_indexed": 15,
+      "documents_failed": 0,
+      "documents_duplicate": 0,
+      "chunks": 263,
+      "chunks_in_vector_store": 263,
+      "avg_chunk_tokens": 235.9,
+      "max_chunk_tokens": 332,
+      "chunks_over_embedding_window": 0,
+      "updated_at": "2026-10-26T14:11:42+00:00"
+    }
+  },
+  "seed": 42,
+  "environment": {
+    "python": "3.11.17",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "machine": "AMD64",
+    "packages": {
+      "ollama": "0.6.3",
+      "chromadb": "1.5.9",
+      "sentence-transformers": "5.7.0",
+      "torch": "2.7.1+cpu",
+      "sqlglot": "30.24.0",
+      "pydantic": "2.14.1",
+      "fastapi": "0.162.0"
+    },
+    "git_commit": "a8fcb81687da2f048b1d0fc0be20eaf6888058fc"
+  },
+  "limit": null,
+  "conditions_run": [
+    "baseline",
+    "rag"
+  ],
+  "judges": {
+    "qwen2.5-3b__rubric": {
+      "model": "qwen2.5:3b",
+      "mode": "rubric",
+      "evidence": "none",
+      "prompt_sha256_12": "0821c0b38289",
+      "identity": {
+        "name": "qwen2.5:3b",
+        "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "size": 1929912432,
+        "parameter_size": "3.1B",
+        "quantization": "Q4_K_M"
+      }
+    }
+  }
+}

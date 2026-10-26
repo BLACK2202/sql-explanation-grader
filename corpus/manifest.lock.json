@@ -1,0 +1,130 @@
+{
+  "pg-subquery-expressions": {
+    "bytes_original": 31557,
+    "bytes_stored": 31456,
+    "retrieved_at": "2026-10-26T13:20:13+00:00",
+    "sha256_original": "9aaa0995ae847073706b93a0da0771b8b8ddb95de85210d66823cd7bdcf51e0e",
+    "sha256_stored": "14efc027aa85547b449875bb2ffdac1e1e2ace72d00ffa6898a5a5d557bbe308",
+    "url": "https://www.postgresql.org/docs/17/functions-subquery.html"
+  },
+  "pg-tutorial-agg": {
+    "bytes_original": 20662,
+    "bytes_stored": 20561,
+    "retrieved_at": "2026-10-26T13:20:08+00:00",
+    "sha256_original": "13fdf943a2413595e18b2a267c1b08b01146e5ec5cbd4a466feca83d10247623",
+    "sha256_stored": "fe3ec8eef7006c36fd8bb14e1d706c3edc4f6831dbeab6ec11f3ddc00a66f38f",
+    "url": "https://www.postgresql.org/docs/17/tutorial-agg.html"
+  },
+  "pg-tutorial-join": {
+    "bytes_original": 22281,
+    "bytes_stored": 22180,
+    "retrieved_at": "2026-10-26T13:20:05+00:00",
+    "sha256_original": "062d71e432c09fa0dafc755047eac34d7be744e51fab7d7b9ac7c44ce398089f",
+    "sha256_stored": "46dcd7bff1d3040d71d767b727a408df384b3dd74c5ef7991837085e9622d595",
+    "url": "https://www.postgresql.org/docs/17/tutorial-join.html"
+  },
+  "pg-tutorial-select": {
+    "bytes_original": 19743,
+    "bytes_stored": 19642,
+    "retrieved_at": "2026-10-26T13:20:01+00:00",
+    "sha256_original": "9f6a28a833d910a033f3028b4071d35d47b0cbe3d8be406661dc6f66d414b84b",
+    "sha256_stored": "4f0fa136c5bb30f1870fc0ac74deb78b9c48512ef71ed86ad3d37e2201586f7c",
+    "url": "https://www.postgresql.org/docs/17/tutorial-select.html"
+  },
+  "pg-tutorial-window": {
+    "bytes_original": 22776,
+    "bytes_stored": 22675,
+    "retrieved_at": "2026-10-26T13:20:10+00:00",
+    "sha256_original": "f0286da099cb07e32ab52e1a17a84557bbed428e9aaf1883ac22ec0eb6dc3fa1",
+    "sha256_stored": "ad48cbb036512a0bf867b5f09ae51707129d93a4fd47101da5610d96ca4a37cf",
+    "url": "https://www.postgresql.org/docs/17/tutorial-window.html"
+  },
+  "sqlite-aggfunc": {
+    "bytes_original": 307827,
+    "bytes_stored": 19681,
+    "retrieved_at": "2026-10-26T13:18:53+00:00",
+    "sha256_original": "e7697bd9db597d9d7de0b65f9d5c2e631f1d091ed6e809a3ec05cc229bdb0577",
+    "sha256_stored": "791d1697069c9e8d3db2b68e085425987738a3c58f4a5aa77c729de29fb2f1b8",
+    "url": "https://www.sqlite.org/lang_aggfunc.html"
+  },
+  "sqlite-corefunc": {
+    "bytes_original": 43320,
+    "bytes_stored": 37030,
+    "retrieved_at": "2026-10-26T13:19:19+00:00",
+    "sha256_original": "ec49b7c5fb5905f6adaff7d09ace92db22a9f6310435d098501f163f48257885",
+    "sha256_stored": "73c25ba74ceacafb08adb30300af945e2adf5496bc8346c30ea561e59b5f0d65",
+    "url": "https://www.sqlite.org/lang_corefunc.html"
+  },
+  "sqlite-createtable": {
+    "bytes_original": 744208,
+    "bytes_stored": 39282,
+    "retrieved_at": "2026-10-26T13:19:58+00:00",
+    "sha256_original": "76396a8a82203639387f766fbd59ef2a5b131e43cb4ebabe4516c3a39ce5074c",
+    "sha256_stored": "3979ead75e3ef854f105e00ab65a621f7d34cef948bfb16c6a0b9a40497f00b4",
+    "url": "https://www.sqlite.org/lang_createtable.html"
+  },
+  "sqlite-datatypes": {
+    "bytes_original": 38701,
+    "bytes_stored": 36987,
+    "retrieved_at": "2026-10-26T13:19:32+00:00",
+    "sha256_original": "4eaab766411136c123d392b2a931c69106a60a616f5a52536eacc79729816fe1",
+    "sha256_stored": "9ac3e45e3cf8978a2d1a3c1cef873d2e669cf0cf06b5585e3ac9aa4f2fbd6915",
+    "url": "https://www.sqlite.org/datatype3.html"
+  },
+  "sqlite-datefunc": {
+    "bytes_original": 29640,
+    "bytes_stored": 27926,
+    "retrieved_at": "2026-10-26T13:19:24+00:00",
+    "sha256_original": "4e8179554f5097120b8a484192806a7251711fc38421cf9530f3678602655d1f",
+    "sha256_stored": "02b875ba229fd0ca0a9e174131268a5e3535ddade4fed729f0757a648327d406",
+    "url": "https://www.sqlite.org/lang_datefunc.html"
+  },
+  "sqlite-expr": {
+    "bytes_original": 379232,
+    "bytes_stored": 45742,
+    "retrieved_at": "2026-10-26T13:19:13+00:00",
+    "sha256_original": "a618cf34414eaf5390a5b7814b8b720a08daff6a64fdcf7b3a02bf7b474a65a4",
+    "sha256_stored": "a67f980c43c5c338fd89a98f43a19beb18ab3c2b62b54d2a815475c78e577abf",
+    "url": "https://www.sqlite.org/lang_expr.html"
+  },
+  "sqlite-json": {
+    "bytes_original": 71070,
+    "bytes_stored": 69299,
+    "retrieved_at": "2026-10-26T13:20:19+00:00",
+    "sha256_original": "bca8f665a03ab34e83ed8965b7dee2e12f1a6ffa4202d6bf2acc0f574becafb9",
+    "sha256_stored": "834f3d72c64cc3d2af550eedc7cb9415ad4beed4205c5edec8c635f58d8d7fe8",
+    "url": "https://www.sqlite.org/json1.html"
+  },
+  "sqlite-nulls": {
+    "bytes_original": 16731,
+    "bytes_stored": 15017,
+    "retrieved_at": "2026-10-26T13:19:28+00:00",
+    "sha256_original": "72e83d603df733b22e094d5275febc5e2925a26917c918fde260e107ebe7bfb9",
+    "sha256_stored": "5c139e542f304e4acbf338453946d008a2b683650a1e6d42d29540974af7af39",
+    "url": "https://www.sqlite.org/nulls.html"
+  },
+  "sqlite-select": {
+    "bytes_original": 2033807,
+    "bytes_stored": 80358,
+    "retrieved_at": "2026-10-26T13:18:29+00:00",
+    "sha256_original": "f850d5a0e9441d348535494f9c647ea90548a03a1c7bd51cdac6c7943e6dc785",
+    "sha256_stored": "32fe3c0756f71fbe4f5a0a720cea6ba286b7ac206c2ab25725ee7fb5b6edd182",
+    "url": "https://www.sqlite.org/lang_select.html"
+  },
+  "sqlite-window": {
+    "bytes_original": 923326,
+    "bytes_stored": 62540,
+    "retrieved_at": "2026-10-26T13:18:45+00:00",
+    "sha256_original": "541a738f7fd26efca132111ef51e74c2a3233054faa3471ee88f9696ebe97e98",
+    "sha256_stored": "31888ad98dec0494893cfaa40f53725301392e34948d4c95ee49dad16ea3f4fc",
+    "url": "https://www.sqlite.org/windowfunctions.html"
+  },
+  "sqlite-with": {
+    "bytes_original": 337735,
+    "bytes_stored": 39197,
+    "retrieved_at": "2026-10-26T13:18:37+00:00",
+    "sha256_original": "d3d4c329bb80bc53adb30334af712a4b5583e4c548ab401b2887bb43728792f7",
+    "sha256_stored": "df9da4ba0b4ddb4943da403f0a77d0a9f4a552aabb8a07ee37f18529f007330b",
+    "url": "https://www.sqlite.org/lang_with.html"
+  }
+}
